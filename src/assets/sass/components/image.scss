@@ -1,0 +1,23 @@
+@use '../config/' as *;
+
+.a__image {
+  position: relative;
+  border-radius: rm(2);
+  aspect-ratio: 300/200;
+  width: rm(300);
+  margin-inline: auto;
+  margin-block-start: rm(12);
+  border-radius: rm(2);
+  overflow: hidden;
+  outline: rm(3) solid #fff;
+  outline-offset: rm(-2);
+
+  &::after {
+    position: absolute;
+    content: "";
+    inset: 0;
+    -moz-box-shadow: inset 0px 0px rm(8) rm(8) #fff;
+    -webkit-box-shadow: inset 0px 0px rm(8) rm(8) #fff;
+    box-shadow: inset 0px 0px rm(8) rm(8) #fff;
+  }
+}

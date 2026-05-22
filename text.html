@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex" />
+    <title>静的サイト用Gulpテンプレート</title>
+    <!-- OGP -->
+    <meta property="og:title" content="サイトタイトル" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hogehoge.com/" />
+    <meta property="og:description" content="サイトタイトル" />
+    <meta property="og:image" content="https://hogehoge.com/" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="サイトタイトル" />
+    <meta name="twitter:description" content="サイトタイトル" />
+    <!-- google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <!-- 構造化データ
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "サイト名",
+                "url": "https://www.example.com"
+            }
+        </script> -->
+
+    <!-- Google Analytics -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script> -->
+  </head>
+
+  <body>
+    <h1>テキスト</h1>
+    <div class="l-inner">
+      <!-------------------------------
+      //    テキスト
+      //------------------------------->
+      <!-- 分割背景テキスト -->
+      <div class="a-text-wrap">
+        <span class="a-text">ダミーテキスト</span>
+        <span class="a-text">テキスト</span>
+      </div>
+      <!-- 囲いテキスト -->
+      <p class="b-text">『でも、こういうツールって難しそう…』</p>
+      <!-- リスト型 -->
+      <div class="c-text">
+        <span class="c-text-head"> point </span>
+        <ul class="c-text-list">
+          <li class="c-text-item">
+            <span class="c-text-title">専用マニュアル付き</span>
+            <p class="c-text-description">
+              最初から専用マニュアルをおつけしています
+            </p>
+          </li>
+          <li class="c-text-item">
+            <span class="c-text-title">操作動画で安心</span>
+            <p class="c-text-description">
+              使い方に迷ったときには、<br />操作動画を見ながらそのまま真似するだけ
+            </p>
+          </li>
+          <li class="c-text-item">
+            <span class="c-text-title">パソコン不要</span>
+            <p class="c-text-description">
+              スマホだけで操作OK<br />パソコンが苦手な方でも安心
+            </p>
+          </li>
+        </ul>
+      </div>
+      <!-- 吹き出し -->
+      <div class="d-text-bg">
+        <p class="d-text">その型を見ながら<br />自分で文章を考えるのは大変</p>
+      </div>
+      <!-- ハイライト -->
+      <div class="e-text">大手美容サロンは違います</div>
+    </div>
+
+    <script src="/js/script.js" defer></script>
+  </body>
+</html>

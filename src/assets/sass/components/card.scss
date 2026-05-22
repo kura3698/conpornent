@@ -1,0 +1,104 @@
+@use "../config/" as *;
+
+.a-card {
+  border-radius: rm(3);
+  max-width: rm(500);
+}
+
+.a-card__head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: rm(7);
+  justify-content: center;
+  color: white;
+  height: rm(100);
+  text-align: center;
+}
+
+.a-card__bg {
+  position: absolute;
+  border-radius: rm(3) rm(3) 0 0;
+  background: #fa92a7;
+  width: 100%;
+  height: rm(101);
+  z-index: 1;
+  &::before {
+    content: "";
+    position: absolute;
+    width: rm(82);
+    height: rm(82);
+    background: #fa92a7;
+    border-radius: 50%;
+    top: rm(-41);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.a-card__number {
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  font-family: $ff-en;
+  text-align: center;
+  font-size: rm(32);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 0.875;
+  top: rm(-16);
+  z-index: 2;
+  &::before {
+    content: "Point";
+    position: absolute;
+    text-align: center;
+    font-size: rm(17);
+    font-style: italic;
+    font-weight: 300;
+    line-height: 0.875;
+    left: 50%;
+    transform: translateX(-50%);
+    top: rm(-13);
+  }
+}
+
+.a-card__text {
+  color: #fff;
+  font-family: $ff-jp;
+  font-size: rm(28);
+  font-weight: 700;
+  line-height: 1.18;
+  z-index: 2;
+}
+
+.a-card__body {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.a-card__description-wrap {
+  background: #fff8fa;
+  padding-block-end: rm(10);
+  padding-inline: rm(15);
+  padding-block-start: rm(14);
+  border-radius: 0 0 rm(3) rm(3);
+}
+.a-card__description {
+  color: #333;
+  font-size: rm(14);
+  font-weight: 400;
+  line-height: 1.62;
+  text-align: left;
+}
+
+.a-card__attention {
+  margin-block-start: rm(8);
+  display: inline-block;
+  text-align: left;
+  font-size: rm(10);
+  font-weight: 400;
+  line-height: 1.6;
+  color: gray;
+}
+
+.a-card__image {
+}

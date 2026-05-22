@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex" />
+    <title>静的サイト用Gulpテンプレート</title>
+    <!-- OGP -->
+    <meta property="og:title" content="サイトタイトル" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hogehoge.com/" />
+    <meta property="og:description" content="サイトタイトル" />
+    <meta property="og:image" content="https://hogehoge.com/" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="サイトタイトル" />
+    <meta name="twitter:description" content="サイトタイトル" />
+    <!-- google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <!-- 構造化データ
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "サイト名",
+                "url": "https://www.example.com"
+            }
+        </script> -->
+
+    <!-- Google Analytics -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script> -->
+  </head>
+
+  <body>
+    <h1>カード</h1>
+    <div class="l-inner">
+      <!-------------------------------
+      //    カード
+      //------------------------------->
+
+      <div class="a-card">
+        <div class="a-card__head">
+          <div class="a-card__bg"></div>
+          <span class="a-card__number">01</span>
+          <h2 class="a-card__text">もう"文章に1時間"<br />悩まなくていい</h2>
+        </div>
+        <div class="a-card__body">
+          <div class="a-card__description-wrap">
+            <p class="a-card__description">
+              今までは、投稿1つ考えるだけで1時間。<br />「この表現でいいのかな？」「もっといい言い方があるのでは？」と手が止まっていたかもしれません。でもサロンチャームなら、型に沿ってスマホでポチポチするだけ。10分
+              ※ほどで"予約につながる文章"が完成します。余った時間は施術に集中することも、ゆっくりお茶を飲むことだってできます。
+            </p>
+            <span class="a-card__attention">
+              ※文章作成時間には個人差があります。<br />慣れによって所要時間が短縮されるケースもあります。
+            </span>
+          </div>
+          <figure class="a-card__image">
+            <img
+              src="./img/img_benefit-1.webp"
+              loading="lazy"
+              alt="12時を指し示そうな時計の画像"
+              width="361"
+              height="180"
+            />
+          </figure>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/script.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex" />
+    <title>静的サイト用Gulpテンプレート</title>
+    <!-- OGP -->
+    <meta property="og:title" content="サイトタイトル" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hogehoge.com/" />
+    <meta property="og:description" content="サイトタイトル" />
+    <meta property="og:image" content="https://hogehoge.com/" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="サイトタイトル" />
+    <meta name="twitter:description" content="サイトタイトル" />
+    <!-- google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <!-- 構造化データ
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "サイト名",
+                "url": "https://www.example.com"
+            }
+        </script> -->
+
+    <!-- Google Analytics -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script> -->
+  </head>
+
+  <body>
+    <h1>図解</h1>
+    <div class="l-inner">
+      <!-------------------------------
+      //    図解
+      //------------------------------->
+      <!-- ３つトライアングル -->
+      <ul class="a-flow">
+        <li class="a-flow__item">
+          <p class="a-flow__text">続けられない</p>
+          <div class="a-flow__image">
+            <img
+              src="./img/img_flow-1.webp"
+              alt="女性が悲しんでいるイラスト"
+              width="72"
+              height="72"
+              loading="lazy"
+            />
+          </div>
+        </li>
+        <li class="a-flow__item">
+          <p class="a-flow__text">結局割引</p>
+          <div class="a-flow__image">
+            <img
+              src="./img/img_flow-2.webp"
+              alt="天秤にお金が乗っているイラスト"
+              width="58"
+              height="58"
+              loading="lazy"
+            />
+          </div>
+        </li>
+        <li class="a-flow__item">
+          <p class="a-flow__text">集客できない</p>
+          <div class="a-flow__image">
+            <img
+              src="./img/img_flow-3.webp"
+              alt="お店に行列ができているイラスト"
+              width="72"
+              height="72"
+              loading="lazy"
+            />
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <script src="/js/script.js" defer></script>
+  </body>
+</html>

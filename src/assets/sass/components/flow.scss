@@ -1,0 +1,96 @@
+@use "../config/" as *;
+
+.a-flow {
+  padding: rm(14) rm(14) rm(11);
+  border-radius: rm(8);
+  background: #f7ced5;
+  row-gap: rm(18);
+  display: grid;
+  grid-template-areas:
+    "flow1 flow1"
+    "flow2 flow3";
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  width: rm(255);
+  position: relative;
+  z-index: 1;
+}
+
+.a-flow__item {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  width: rm(91);
+  height: rm(91);
+  background: #fff;
+  border-radius: 50%;
+  border: rm(3) solid #fa92a7;
+
+  &::before {
+    content: "";
+    position: absolute;
+    background: url(../img/dec_flow-arrow.svg) no-repeat center/contain;
+    width: rm(76);
+    height: rm(76);
+    z-index: -1;
+  }
+
+  &:nth-child(1) {
+    grid-area: flow1;
+    &::before {
+      right: rm(-31);
+      rotate: 110deg;
+      bottom: rm(-44);
+    }
+  }
+  .a-flow__image {
+    top: rm(-5);
+    width: rm(72);
+  }
+
+  &:nth-child(2) {
+    grid-area: flow2;
+    justify-self: self-start;
+
+    &::before {
+      right: rm(-27);
+      rotate: 0deg;
+      top: rm(-46);
+    }
+
+    .a-flow__image {
+      top: rm(3);
+      width: rm(58);
+    }
+  }
+  &:nth-child(3) {
+    grid-area: flow3;
+    justify-self: self-end;
+
+    &::before {
+      right: rm(72);
+      rotate: 236deg;
+      top: rm(9);
+    }
+
+    .a-flow__image {
+      top: rm(-5);
+      width: rm(72);
+    }
+  }
+}
+
+.a-flow__text {
+  text-shadow: 0 0 rm(4) #fff, 0 0 rm(3) #fff;
+  font-size: rm(11);
+  font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  top: rm(57);
+}
+
+.a-flow__image {
+  position: absolute;
+}

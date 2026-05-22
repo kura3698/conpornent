@@ -1,0 +1,149 @@
+@use "../config/" as *;
+
+// 分割
+
+.a-text-wrap {
+  display: flex;
+  gap: rm(4);
+  flex-direction: column;
+}
+
+.a-text {
+  color: white;
+  width: fit-content;
+  margin-inline: auto;
+  display: inline-block;
+  color: $text-white;
+  font-size: rm(18);
+  font-weight: 700;
+  line-height: 1.8;
+  padding-inline: rm(10);
+  border-radius: rm(5);
+  background: #333;
+}
+
+// 囲いテキスト
+
+.b-text {
+  display: inline-block;
+  border-radius: 2px;
+  border: 0.5px solid currentColor;
+  background: #fff;
+  color: #e5647e;
+  font-weight: 700;
+  padding: 2px;
+}
+
+// 囲いリストテキスト
+
+.c-text {
+  color: #e5647e;
+  font-size: 23px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 0.7;
+}
+
+.c-text-head {
+}
+
+.c-text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: fit-content;
+  margin-inline: auto;
+  padding-block-start: 12px;
+  white-space: nowrap;
+}
+
+.c-text-item {
+  border-radius: 7px;
+  border: 1px solid #e5647e;
+  background: #fff;
+  padding: 6px 40px;
+}
+
+.c-text-title {
+  color: #e5647e;
+  font-weight: 700;
+  line-height: 1.42;
+  font-size: 16px;
+}
+
+.c-text-description {
+  color: #333;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.33;
+  margin-block-start: 3px;
+}
+
+//　吹き出し
+
+.d-text-bg {
+  position: relative;
+  inset: 0;
+  border-radius: rm(30);
+  background: #fff;
+  height: rm(60);
+  width: rm(260);
+
+  &::after {
+    content: "";
+    position: absolute;
+    background: url(../img/deco_tri.svg) center / contain no-repeat;
+    width: rm(30);
+    height: rm(41);
+    bottom: rm(-11);
+    left: rm(14);
+  }
+  &--reverse {
+    &::after {
+      content: "";
+      background: url(../img/deco_tri--reverse.svg) center / contain no-repeat;
+      position: absolute;
+      left: unset;
+      right: rm(14);
+    }
+  }
+}
+
+.d-text {
+  position: absolute;
+  background: linear-gradient(125deg, #ed8fa5 30.59%, #e66882 102.26%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-size: rm(16);
+  font-weight: 700;
+  line-height: 1.375;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.e-text {
+  position: relative;
+  z-index: 1;
+  font-family: $ff-en;
+  font-size: rm(24);
+  font-weight: 700;
+  line-height: 0.94; /* 94.792% */
+  margin-inline: rm(20);
+  background: linear-gradient(transparent 60%, rgba(250, 146, 167, 0.6) 60%);
+  // &::before {
+  //   content: "";
+  //   width: 100%;
+  //   height: 30%;
+  //   // background: rgba(250, 146, 167, 0.6);
+  //   position: absolute;
+  //   left: 0;
+  //   bottom: 0;
+  //   right: 0;
+  //   z-index: -1;
+  // }
+}
