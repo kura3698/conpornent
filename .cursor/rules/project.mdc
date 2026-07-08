@@ -1,0 +1,135 @@
+---
+description: 案件固有ルール（色・フォント・カンプ・ライブラリ）— 案件ごとに編集
+alwaysApply: true
+---
+
+# 案件固有ルール — sample-test
+
+## ⚠️ AIへの初期要件
+
+- コーディングを開始する前に、必ずこのファイルの**【カラー】と【フォント】の変数を確認**し、デザイン要件に準拠すること。
+
+## 案件情報
+
+| 項目   | 値      |
+| ------ | ------- |
+| 案件名 | demo-lp |
+
+## レイアウト（variables.scss で管理）
+
+| 項目                  | 値         | AI用変数マッピング                    |
+| --------------------- | ---------- | ------------------------------------- |
+| カンプPC / SP幅       | 1440 / 390 | `$pc-camp` / `$sp-camp`               |
+| メイン幅(PC/SP)       | 1000 / 600 | `$pc-inner` / `$sp-inner`             |
+| 左右パディング(PC/SP) | 30 / 20    | `$pc-sidePadding` / `$sp-sidePadding` |
+| ブレイクポイント      | 768        | `$breakpoint`                         |
+| PCの狭い幅            | 852        | `$pc-narrow-inner`                    |
+
+余白（gap / margin / rclamp）の詳細 → `web-coding-spacing.mdc`
+
+## レスポンシブ方針
+
+| 設定項目           | 値           | 選択肢・補足                                     |
+| :----------------- | :----------- | :----------------------------------------------- |
+| レスポンシブ方針   | mobile-first | `mobile-first` または `pc-first`                 |
+| リキッドレイアウト | false        | `true`（ルート可変rem） または `false`（固定幅） |
+
+## カラー（必ず以下の変数を使用すること）
+
+`$text-main: #333333` /` $text-accent: #D91621` / ;`$main-color: #4FABBF` /`$reverse-color: #fff` / `$bg-main: #FFF9EB` /
+
+## フォント
+
+| 種類   | フォント名（Google Fonts） | 必要なウェイト（太さ） | SCSS変数 |
+| ------ | -------------------------- | ---------------------- | -------- |
+| 日本語 | Noto Sans JP               | Regular, Medium, Bold  | `$ff`    |
+| 英語   | Oswald                     | Regular, Medium        | `$ff-en` |
+
+AIはマークアップ時、以下の命名規則と実装パターンを厳守すること。
+自己流のクラス名や無駄なラッパー（`div`）の乱用を禁止する。
+
+### 1. 共通レイアウト (Layout)
+
+ページの骨格となる要素。幅や余白のみを管理し、装飾は持たない。
+
+- `.l-header` / `.l-footer` : ヘッダー・フッター
+- `.l-main` : メインコンテンツ
+- `.l-inner` : 中央揃え・最大幅指定（※`.l-container`ではなく`.l-inner`に統一）
+- `.l-section` : 各セクションの共通上下余白
+
+### 2. コンポーネント (Component)
+
+プロジェクト全体で再利用可能な汎用UIパーツ。特定のセクションに依存しない。
+
+- **タイトル:** `.c-section-title`
+- **ボタン:** `.c-btn`（修飾: `.c-btn--primary`, `.c-btn--large` ※独立したセレクタで記述）
+- **UIパーツ:** `.c-hamburger`, `.c-modal`, `.c-accordion`（スライダーは `.p-xxx__slider.swiper` — `web-coding-swiper.mdc` 参照、アコーディオンは `web-coding-accordion.mdc` 参照）
+- **汎用カード:** `.c-card`, `.c-card-tour`, `.c-card-review`
+- **フォーム:** `.c-form`（要素: `.c-form__group`, `.c-form__label`, `.c-form__input`）
+
+### 3. セクション別クラス (Project)
+
+特定のセクション専用のスタイル。`c-` に該当しないものはすべて `p-` で囲む。
+※ 要素(`__`)は必ずネストさせず、独立したセレクタとしてCSSを記述すること。
+
+| セクション     | クラス例（構成）                                                                     | AIへの実装指示                                                                        |
+| -------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| **ヘッダー**   | `.p-global-nav`, `.p-global-nav__list`, `.p-global-nav__item`, `.p-global-nav__link` | PC/SPでの表示切り替えを考慮すること。                                                 |
+| **FV (Hero)**  | `.p-fv`, `.p-fv__slider`                                                             | フルスクリーン・背景動画・スライダー等、案件に合わせて実装。                          |
+| **特徴/強み**  | `.p-features`, `.p-features__item`, `.p-features__figure`, `.p-features__body`       | 画像＋テキストの王道パターン。交互配置の場合は `:nth-child(even)` 等を活用。          |
+| **サービス**   | `.p-services`, `.p-services__list`                                                   | PCは `display: grid` 等、SPは `.p-xxx__slider.swiper` で Swiper 化（`web-coding-swiper.mdc` 参照）。 |
+| **ギャラリー** | `.p-gallery`, `.p-gallery__slider`                                                   | 無限ループスライダーなどの実装を想定。                                                |
+| **お客様の声** | `.p-reviews`, `.p-reviews__list`                                                     | クリックで `.is-open` を付与し、`.c-modal` を表示する想定でマークアップすること。     |
+| **FAQ**        | `.p-faq`, `.p-faq__item`, `.p-faq__q`, `.p-faq__a`                                   | アコーディオン (`.c-accordion`) — `web-coding-accordion.mdc` 参照。                   |
+| **メッセージ** | `.p-message`, `.p-message__bg`, `.p-message__box`                                    | 背景画像の上にテキストボックスを重ねるレイアウト。                                    |
+
+### ⚠️ AIによるクラスの自律的な追加・命名ルール
+
+上記のリストはあくまで代表例（テンプレート）です。案件に応じて新しいセクション（例: 料金表、会社概要、導入の流れ など）が登場した場合、AIは以下のルールに従って**自律的に新しい `p-` クラスを作成**すること。
+
+1. **直感的で短い英単語の採用:** （例: `.p-price`, `.p-company`, `.p-flow` など）。意味不明な略語や、長すぎるクラス名（例: `.p-section-company-information-wrapper`）は避けること。
+2. **FLOCSS/BEMの厳守:** 新規作成したクラスであっても、「要素のネスト禁止（独立したセレクタにする）」などの設計規則は絶対厳守すること。
+3. **既存コンポーネントの活用:** 新しい `p-` クラスを作る場合でも、中のタイトルやボタンは必ず既存の `.c-section-title` や `.c-btn` を使い回し、無駄なCSSを増やさないこと。
+
+### 💡 レスポンシブ実装における絶対ルール（コツ）
+
+- **DOMの複製禁止:** PC用とSP用でHTMLの構造が大きく変わる場合でも、安易に `.***--pc` と `.***--sp` のようにHTMLを複製して `display: none` で切り替えるのは**最終手段**とする。
+- **CSSでの解決を優先:** まずは `display: flex` の `order` や、`display: grid` の `grid-template-areas` などを駆使して、**同一のHTML構造のままCSSでレイアウトを変更できないか**を第一に検討すること。
+
+## 画像
+
+- Figma プラグインで圧縮・書き出し → `src/assets/img/` に配置
+- Gulp は `img/` へコピーのみ（再圧縮・WebP変換なし）
+- HTML / SCSS の参照は `/img/...` のみ
+
+## 外部ライブラリ（index.html + script.js）
+
+| ライブラリ           | 用途         | 有効化                                                         |
+| -------------------- | ------------ | -------------------------------------------------------------- |
+| GSAP + ScrollTrigger | `_fadeIn.js` | CDNコメント解除 + `import "./parts/_fadeIn.js"` のコメント解除 |
+| Swiper 11            | `_swiper.js` | 同上                                                           |
+
+## JS parts 一覧
+
+使うものだけ `script.js` の import コメントを外す。納品前に未使用ファイル・行を削除。
+
+| ファイル               | 役割                    | 推奨     |
+| ---------------------- | ----------------------- | -------- |
+| `_viewport.js`         | 375px以下 viewport 固定 | 案件次第 |
+| `_drawer.js`           | ドロワー                | UI次第   |
+| `_smooth.js`           | アンカースムース        | 推奨     |
+| `_hamburger-scroll.js` | ハンバーガー色変更      | UI次第   |
+| `_header-logo.js`      | スクロールでロゴ非表示  | UI次第   |
+| `_inview.js`           | `.inview` → `.show`     | UI次第   |
+| `_fadeIn.js`           | GSAP フェードイン       | UI次第   |
+| `_swiper.js`           | スライダー              | UI次第   |
+| `_to-top.js`           | ページトップ            | UI次第   |
+| `_tel.js`              | PCで tel: 無効          | 推奨     |
+| `_loading.js`          | 初回ローディング        | UI次第   |
+| `_resizeobserver.js`   | `--header-block-size`   | UI次第   |
+
+## 納品手順（AIは実行しない・人間が行う）
+
+1. `script.js` の未使用 import（コメントアウト含む）を削除
+2. `src/assets/js/parts/` の未使用 `_*.js` を削除
+3. `npx gulp build` → `css/` `js/` `img/` `*.html` のみアップロード

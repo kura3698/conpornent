@@ -1,22 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="noindex" />
-    <title>静的サイト用Gulpテンプレート</title>
-    <!-- OGP -->
-    <meta property="og:title" content="サイトタイトル" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://hogehoge.com/" />
-    <meta property="og:description" content="サイトタイトル" />
-    <meta property="og:image" content="https://hogehoge.com/" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="628" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="サイトタイトル" />
-    <meta name="twitter:description" content="サイトタイトル" />
+    <title>Image — Component Snippets</title>
     <!-- google font-->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,48 +13,47 @@
       href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap"
       rel="stylesheet"
     />
-
     <!-- CSS -->
-    <link rel="stylesheet" href="/css/style.css" />
-
-    <!-- 構造化データ
-        <script type="application/ld+json">
-            {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "name": "サイト名",
-                "url": "https://www.example.com"
-            }
-        </script> -->
-
-    <!-- Google Analytics -->
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
-    </script> -->
+    <link rel="stylesheet" href="css/style.css" />
   </head>
 
   <body>
-    <h1>画像</h1>
-    <div class="l-inner">
-      <!-------------------------------
-      //    ぼかし
-      //------------------------------->
-
-      <div class="a__image">
-        <img
-          src="./img/img_insight-1.webp"
-          alt="ベッドに座ってスマホを操作している女性の画像"
-          width="300"
-          height="200"
-          loading="lazy"
-        />
+    <!-- ライブラリ共通ヘッダー -->
+    <header class="p-lib-header">
+      <div class="p-lib-header__inner">
+        <a href="index.html" class="p-lib-header__back">← 一覧</a>
+        <span class="p-lib-header__brand">Component Snippets</span>
+        <span class="p-lib-header__category">Image</span>
       </div>
-    </div>
+    </header>
 
-    <script src="/js/script.js" defer></script>
+    <main>
+      <div class="l-inner">
+        <h1 class="p-lib-page-title">Image</h1>
+
+        <!-- ぼかし画像 -->
+        <section class="c-snippet" aria-labelledby="title-a-image">
+          <div class="c-snippet__meta">
+            <h2 class="c-snippet__title" id="title-a-image">ぼかし画像エフェクト</h2>
+            <span class="c-snippet__scss">image.scss / .a__image</span>
+            <button class="c-snippet__copy js-copy-btn" type="button" data-target="demo-a-image">HTMLをコピー</button>
+          </div>
+          <div class="c-snippet__demo" id="demo-a-image">
+            <div class="a__image">
+              <img
+                src="img/img_insight-1.webp"
+                alt="ベッドに座ってスマホを操作している女性の画像"
+                width="300"
+                height="200"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="js/script.js" defer></script>
   </body>
 </html>

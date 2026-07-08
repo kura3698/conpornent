@@ -1,0 +1,179 @@
+@use "../config/" as *;
+
+// ==========================================
+//  TOP ページ（index.html）
+// ==========================================
+
+.p-top {
+  min-block-size: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+// ヒーローエリア
+.p-top__hero {
+  background: #2b2b2b;
+  padding-block: rm(80) rm(64);
+  text-align: center;
+
+  @include mq(md) {
+    padding-block: rm(56) rm(48);
+  }
+}
+
+.p-top__title {
+  font-family: $ff-en;
+  font-size: rm(64) !important;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  margin-block-end: rm(16) !important;
+
+  @include mq(md) {
+    font-size: rm(44) !important;
+  }
+}
+
+.p-top__lead {
+  font-size: rm(14);
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.12em;
+}
+
+// カードグリッドエリア
+.p-top__section {
+  flex: 1;
+  padding-block: rm(64) rm(80);
+
+  @include mq(md) {
+    padding-block: rm(40) rm(60);
+  }
+}
+
+.p-top__inner {
+  padding-block: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.p-top__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: rm(20);
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  @include mq(lg) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include mq(sm) {
+    grid-template-columns: 1fr;
+    gap: rm(16);
+  }
+}
+
+.p-top__card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: rm(12);
+  padding: rm(28) rm(24) rm(20);
+  text-decoration: none;
+  color: $text-main;
+  border: 1px solid #e8e8e8;
+  block-size: 100%;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+
+  &:focus-visible {
+    outline: 2px solid $accent-green;
+    outline-offset: 4px;
+  }
+
+  @media (any-hover: hover) {
+    &:hover {
+      transform: translateY(rm(-4));
+      box-shadow: 0 rm(8) rm(28) rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.p-top__card-count {
+  font-size: rm(11);
+  font-family: $ff-en;
+  color: $accent-green;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-block-end: rm(8);
+}
+
+.p-top__card-en {
+  font-family: $ff-en;
+  font-size: rm(36);
+  font-weight: 700;
+  color: #2b2b2b;
+  line-height: 1;
+  margin-block-end: rm(6);
+}
+
+.p-top__card-ja {
+  font-size: rm(13);
+  color: rgba(86, 89, 86, 0.65);
+  margin-block-end: rm(16);
+}
+
+.p-top__card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.p-top__card-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: rm(8);
+  padding-block: rm(8);
+  border-block-end: 1px solid #eee;
+
+  &:last-child {
+    border-block-end: none;
+  }
+}
+
+.p-top__card-item-name {
+  font-size: rm(12);
+  font-weight: 700;
+  color: $text-main;
+  line-height: 1.4;
+}
+
+.p-top__card-item-desc {
+  font-size: rm(11);
+  color: rgba(86, 89, 86, 0.55);
+  line-height: 1.4;
+  text-align: end;
+  flex-shrink: 0;
+}
+
+.p-top__card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: rm(4);
+  margin-block-start: rm(20);
+  font-size: rm(12);
+  font-weight: 700;
+  color: $accent-green;
+  font-family: $ff-en;
+  letter-spacing: 0.04em;
+}

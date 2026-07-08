@@ -1,0 +1,134 @@
+---
+description: 静的サイト制作の共通ルール（HTML / JS / 画像 / ディレクトリ / Gulp）
+alwaysApply: true
+---
+
+# WEBコーディング共通ルール
+
+## 技術スタック
+
+- HTML5（セマンティック）
+- SCSS → CSS（Gulp + Dart Sass / FLOCSS設計）
+- Vanilla JavaScript（ES Modules）
+- ビルド: Gulp 4（`gulpfile.js` / `package.json` type: module）
+
+## ディレクトリ構成とAIの編集権限
+
+⚠️ **AIは `src/` ディレクトリ配下およびルートの `.html` のみ編集可能。**
+`css/`, `js/`, `img/` ディレクトリ内の生成物は絶対に直接編集しないこと。
+
+```
+プロジェクトルート/
+├── .cursor/rules/      # Cursorルール（テンプレート同梱）
+├── index.html # 編集許可
+├── src/assets/
+│ ├── sass/ # 編集許可（*.scss のみ）
+│ ├── js/
+│ │ ├── script.js # importのON/OFFのみ編集許可
+│ │ └── parts/*.js # 編集許可
+├── css/ js/ img/ # 【編集厳禁】生成物ディレクトリ
+```
+
+## Gulp
+
+| 用途 | コマンド         |
+| ---- | ---------------- |
+| 開発 | `npx gulp dev`   |
+| 本番 | `npx gulp build` |
+
+| タスク | 処理内容                                    |
+| ------ | ------------------------------------------- | --- |
+| Sass   | コンパイル → `css/`                         |
+| JS     | コピー＋圧縮 → `js/`（`parts/` 構造を維持） |     |
+
+**開発時:** `npx gulp dev` の watch が SCSS / JS / 画像を自動反映する。**ユーザーが dev を常時起動している前提**とし、通常のコーディング作業のたびに AI が Gulp コマンドを実行しないこと。
+
+## 画像パス
+
+- **開発**: `img` に配置
+- **参照（HTML / SCSS）**: 常に `/img/...`
+
+```html
+<img
+  src="/img/sample.webp"
+  alt="説明文"
+  width="800"
+  height="600"
+  loading="lazy"
+  decoding="async"
+/>
+```
+
+# 開発フェーズとアニメーション・JSの扱い
+開発は「静的実装フェーズ」と「動的実装フェーズ」の2段階に完全に分離し、ユーザーの指示なしにこれらを混在させてはならない。
+
+1. 静的実装フェーズ（最優先）：
+   - LPの全セクションのレイアウト、ホバーエフェクト（CSS transition）、レスポンシブ対応が100%完成するまでは、JavaScriptの記述や複雑なスクロールアニメーション（GSAP等）の実装を一切行ってはならない。
+   - スライダー（Swiper等）、モーダル、アコーディオン等は、このフェーズでは「JSなしで崩れない静的な見た目（CSS）」のみを完璧に作り込むこと。
+   - **Swiper 前提のスライダー**は `web-coding-swiper.mdc` に従い、静的フェーズの時点で `swiper` / `swiper-wrapper` / `swiper-slide` の 3 層マークアップと `:not(.swiper-initialized)` フォールバック CSS を完成させること（動的フェーズで DOM を組み替えない）。
+   - **アコーディオン（details / summary）**は `web-coding-accordion.mdc` に従い、静的フェーズの時点で 2 層パネル構造・`[open]` / `.is-opened` スタイルを完成させること（動的フェーズで DOM を組み替えない）。
+   - **overflow スクロール領域**は `web-coding-overflow-scroll.mdc` に従い、静的フェーズの時点で `tabindex="0"` と CSS（`overflow` / `overscroll-behavior`）を完成させること（キーボード代理スクロール JS は動的フェーズ）。
+
+2. 動的実装フェーズ：
+   - ユーザーから「JavaScriptの実装、またはアニメーションの実装を開始してください」と明示的な指示があった場合のみ、JSの記述やアニメーションライブラリの導入を行うこと。
+
+## HTML（セマンティック・アクセシビリティ）
+
+詳細は `web-coding-html.mdc` を参照。要点:
+
+- ランドマーク: `<header>` `<nav>` `<main>` `<footer>` を適切に使う
+- `<section>` には必ず見出し（`h2` など）。`<h1>` は1ページ1つ
+- 画像は意味のある `alt`（装飾のみは `alt=""`）
+- インタラクションは要素の役割に合わせる（遷移=`a`、操作=`button`）
+- ドロワー: `aria-expanded` `aria-hidden` `aria-controls`、フォーカストラップ・ESC（`_drawer.js`）
+- スキップリンク・フォーカス可視・`lang="ja"` を維持
+- CSS: `/css/style.css`
+- JS: `<script type="module" src="/js/script.js"></script>`
+- 外部ライブラリ: `index.html` の CDN ブロック（GSAP / Swiper）。不要ならコメントアウトし、`script.js` の import も合わせて無効化
+- クラス: `l-` `c-` `p-` `u-` / 状態 `is-` / JSフック `js-`（`js-` にスタイルを当てない）
+- `p-*` の内側に `l-inner` を入れ子（全幅背景対応）
+- overflow スクロール領域: `web-coding-overflow-scroll.mdc` 参照
+
+## JavaScript
+
+- `script.js` は `import "./parts/_xxx.js"` **のみ**
+- **初期状態**: 全 import をコメントアウト。使う機能だけコメントを外す。
+- 各 part は `DOMContentLoaded` + 要素の存在チェック（`if (!el) return`）を必ず行う。
+- ドロワー: フォーカストラップ・ESC・背景固定。
+
+### ⚠️ AI作業時のJS追加・修正ルール
+
+- **パーツの新規作成:** 既存の `parts/` にない新しいUIや機能（アコーディオン、タブ、独自アニメーションなど）の実装を求められた場合は、**躊躇せずに新しいファイル（例: `_accordion.js`）を `src/assets/js/parts/` に作成**し、`script.js` で import すること。
+- **既存パーツの修正:** 要件に応じて、既存の `_*.js` ファイルも積極的に修正・最適化してよい。
+- `script.js` に直接ロジックをベタ書きすることは**【厳禁】**。必ずモジュール（parts）として分割すること。
+
+```javascript
+// script.js（開発時）
+// import "./parts/_drawer.js";
+import "./parts/_smooth.js";
+import "./parts/_new-feature.js"; // AIが新規作成した場合は追記する
+
+// parts/_new-feature.js の基本形
+document.addEventListener("DOMContentLoaded", () => {
+  const targetEl = document.querySelector(".js-target");
+  if (!targetEl) return; // 存在チェック必須
+
+  // 処理を記述
+});
+```
+
+## 納品前チェック（JS）
+
+Gulp は未使用 part の自動削除に対応しない。以下を**人間が手動**で行う（AI は実行しない）:
+
+1. `script.js` から未使用の import 行（コメントアウト含む）を削除
+2. `src/assets/js/parts/` から使っていない `_*.js` を削除
+3. `npx gulp build` → `css/` `js/` `img/` `*.html` のみアップロード
+
+## AI作業時
+
+- `src/` のみ編集。`css/` `js/` `img/` は Gulp 生成物
+- `**/sass/**/index.scss` は自動生成（手編集禁止）
+- 案件差分は `project.mdc` と `variables.scss`
+- `project-rules.mdc`（案件固有ルール）を最優先で確認し、指定された変数・設定に従うこと。
+- **`npx gulp dev` / `npx gulp build` は作業完了時に実行しない。** dev の watch が生成物を更新する。build は納品時（人間）またはユーザーが明示指示した場合のみ。

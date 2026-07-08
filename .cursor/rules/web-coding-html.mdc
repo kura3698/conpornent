@@ -1,0 +1,398 @@
+---
+description: HTML マークアップ・アクセシビリティ規約
+globs: "**/*.html"
+alwaysApply: true
+---
+
+# HTML / アクセシビリティ / UI実装ルール
+
+## ⚠️ AI出力時の絶対ルール
+
+- **部分出力の徹底:** コードを提案・修正する際は、ファイル全体を出力せず、**変更箇所とその前後の数行（コンテキスト）のみ**を出力すること。
+- **勝手な構造変更の禁止:** 指示がない限り、既存のDOM構造を破壊したり、装飾目的の不要な `<div>` や `<span>` を勝手にラップしないこと。
+- **FLOCSSの厳守:** 勝手にラッパー `<div>` を増やさず、`l-`, `c-`, `p-`, `u-` のプレフィックスを用いたBEM記法でクラスを命名すること。
+
+# アニメーション・JS向けのマークアップ規約
+- **スライダー（Swiper）:** 静的実装フェーズから `web-coding-swiper.mdc` の 3 層構造・コントロール配置・`js-` フック規約に従うこと。後から DOM を組み替えない。
+- **アコーディオン:** 静的実装フェーズから `web-coding-accordion.mdc` の 2 層パネル構造・`is-opened` 連動規約に従うこと。後から DOM を組み替えない。
+- **overflow スクロール領域:** `web-coding-overflow-scroll.mdc` に従い、スクロールコンテナに `tabindex="0"` を付与すること。
+- モーダルウィンドウのHTMLは、各セクションの途中には記述せず、必ず `</body>` の直前にまとめて配置すること。
+
+## セマンティックとアクセシビリティ
+
+- ランドマーク（`<header>`, `<nav>`, `<main>`, `<footer>`）を適切に使用。
+- `<section>` には必ず見出し（`h2`など）を含める。画像のみの装飾は `alt=""`。
+- インタラクション要素の使い分け: ページ遷移は `<a>`、画面内の操作（開閉・タブ等）は `<button type="button">`。
+
+```html
+<body>
+  <a href="#main" class="u-skip-link">メインコンテンツへスキップ</a>
+  <header class="l-header">…</header>
+  <nav class="l-nav" aria-label="メインナビゲーション">…</nav>
+  <main id="main">
+    <section aria-labelledby="about-heading">
+      <h2 id="about-heading">見出し</h2>
+      …
+    </section>
+  </main>
+  <footer class="l-footer">…</footer>
+</body>
+```
+
+- 見出しは階層を飛ばさない（`h1` → `h2` → `h3`）
+- リストは `ul` / `ol`、表は `table` + `caption` / `th scope`
+- 装飾目的だけの `div` 乱用を避け、意味のある要素を優先
+
+## ヘッダー（`.l-header`）のマークアップ構造
+
+ヘッダーは以下の DOM 構造・クラスを**標準形**とする。指示がない限り、この構成から逸脱しないこと（PC ナビ + SP ドロワーの二重構造。HTML の複製はしない）。
+
+```html
+<header class="l-header">
+  <div class="l-header__inner">
+    <a href="#top" class="l-header__logo">
+      <img src="/img/logo.webp" alt="サイト名" width="114" height="50" decoding="async" />
+    </a>
+
+    <nav class="p-global-nav" aria-label="メインナビゲーション">
+      <ul class="p-global-nav__list p-global-nav__list--left">
+        <li class="p-global-nav__item">
+          <a href="#top" class="p-global-nav__link p-global-nav__link--icon" aria-label="TOP">
+            <img src="/img/icon_home.svg" alt="" class="p-global-nav__icon p-global-nav__icon--default" width="20" height="16" decoding="async" />
+            <img src="/img/icon_home-hover.svg" alt="" class="p-global-nav__icon p-global-nav__icon--hover" width="20" height="16" decoding="async" />
+          </a>
+        </li>
+        <li class="p-global-nav__item">
+          <a href="#activity" class="p-global-nav__link">アクティビティ</a>
+        </li>
+        <!-- 左リストの項目を続ける -->
+      </ul>
+      <ul class="p-global-nav__list p-global-nav__list--right">
+        <li class="p-global-nav__item">
+          <a href="#travel" class="p-global-nav__link">旅行例</a>
+        </li>
+        <!-- 右リストの項目を続ける -->
+      </ul>
+    </nav>
+
+    <button
+      type="button"
+      class="c-hamburger-icon"
+      aria-expanded="false"
+      aria-controls="global-drawer"
+      aria-label="メニューを開く"
+    >
+      <span class="c-hamburger-icon__bar" aria-hidden="true"></span>
+      <span class="c-hamburger-icon__bar" aria-hidden="true"></span>
+      <span class="c-hamburger-icon__bar" aria-hidden="true"></span>
+      <span class="c-hamburger-icon__label c-hamburger-icon__label--open">MENU</span>
+      <span class="c-hamburger-icon__label c-hamburger-icon__label--close">CLOSE</span>
+    </button>
+
+    <nav id="global-drawer" class="c-drawer" aria-label="メニュー" aria-hidden="true">
+      <ul class="c-drawer__list">
+        <li class="c-drawer__item">
+          <a href="#top" class="c-drawer__link">TOP</a>
+        </li>
+        <!-- グローバルナビと同一のリンクを c-drawer__link で列挙 -->
+      </ul>
+    </nav>
+  </div>
+</header>
+```
+
+| 要素 | 役割 |
+| ---- | ---- |
+| `.l-header` / `.l-header__inner` | レイアウト・余白 |
+| `.l-header__logo` | ロゴリンク |
+| `.p-global-nav` | PC 用ナビ（`mq(lg)` 以上で表示） |
+| `.p-global-nav__list--left` / `--right` | ロゴ左右のリンク群 |
+| `.c-hamburger-icon` | SP 用メニュー開閉ボタン |
+| `#global-drawer.c-drawer` | SP 用ドロワーパネル（`aria-controls` と id を対応） |
+
+- ドロワー内リンクは `.c-drawer__link` とし、PC ナビ（`.p-global-nav__link`）と**同じ href・文言**を揃える。
+- ハンバーガーは `<button type="button">`。バー・ラベルは `<span aria-hidden="true">`（ラベル文字は可視のため CLOSE/MENU は aria-hidden なしでも可。現行どおり 3 バーに `aria-hidden`）。
+
+## UIコンポーネントの実装方針（Vanilla JS前提）
+
+- **スライダー:** `web-coding-swiper.mdc` を参照。要点のみ — root に `p-xxx__slider` と `swiper` を同一要素で付与、3 層 DOM 固定、外側ラッパー禁止、コントロール UI は静的フェーズから HTML に含める。
+- **アコーディオン:** `web-coding-accordion.mdc` を参照。`<details>` / `<summary>` + `.c-accordion`、外側 `.c-accordion__panel`（アニメ専用）と内側 `.p-xxx__a`（レイアウト専用）の 2 層パネル必須。後から DOM を組み替えない。
+- **モーダル（ポップアップ）:** `<dialog>` タグを使用し、`showModal()` / `close()` メソッドで制御すること。背景スクロール固定も意識する。
+
+## アクセシビリティ
+
+| 項目       | 指針                                                                   |
+| ---------- | ---------------------------------------------------------------------- |
+| 画像       | 内容を説明する `alt`。装飾は `alt=""`                                  |
+| リンク     | リンク先が文脈から分かる文言（「こちら」だけにしない）                 |
+| ボタン     | `button type="button"`。`div` クリックで操作しない                     |
+| フォーム   | `label` と `input` を `for` / `id` で紐付け。`required` `aria-invalid` |
+| ドロワー   | 開閉ボタンに `aria-expanded` `aria-controls`。パネルに `aria-hidden`   |
+| モーダル   | フォーカストラップ・ESC 閉じ・背景スクロール固定                       |
+| 動画       | 字幕・コントロール。自動再生は `muted` かつ必要最小限                  |
+| 色         | コントラスト WCAG AA 以上を目安（テキスト 4.5:1）                      |
+| キーボード | Tab 順序・フォーカスリングを維持（`outline: none` 単体禁止）           |
+| 言語       | `<html lang="ja">`                                                     |
+| ARIA 命名  | `div`/`span`（generic）に `aria-label` 禁止。`role="region"` + `aria-labelledby` またはセマンティック要素を使う |
+
+### ARIA 命名（generic 要素）
+
+ロール未指定の `<div>` / `<span>` の暗黙ロールは **generic** であり、`aria-label` / `aria-labelledby` は許可されない。
+
+**禁止**
+
+- ロール未指定の `<div>` / `<span>` に `aria-label` または `aria-labelledby` を付けない
+
+**許可される要素（暗黙ロールが命名をサポート）**
+
+- `nav`, `section`, `aside`, `button`, `a`（名前付きリンク）などセマンティック要素
+- 明示的に `role="region"` / `role="group"` 等、命名可能なロールを付与した要素
+
+**推奨パターン（見出しがある場合）**
+
+```html
+<h2 id="xxx-heading">見出し</h2>
+<div role="region" aria-labelledby="xxx-heading">…</div>
+```
+
+- 可視見出しがあるときは `aria-label` より `aria-labelledby` を優先（重複読み上げ防止）
+- 親 `<section aria-labelledby="...">` で十分な場合は子 `<div>` への命名は不要（`p-gallery` のように section 見出しで足りるケース）
+
+```html
+<!-- NG: generic div に aria-label -->
+<div class="p-xxx__slider" aria-label="一覧">…</div>
+
+<!-- OK: role="region" + 既存見出しを参照 -->
+<h2 id="plans-heading">プラン一覧</h2>
+<div class="p-xxx__slider" role="region" aria-labelledby="plans-heading">…</div>
+
+<!-- OK: セマンティック要素はそのまま命名可 -->
+<nav aria-label="メインナビゲーション">…</nav>
+<section aria-labelledby="gallery-heading">…</section>
+
+<!-- OK: 命名可能な role を明示 -->
+<div role="group" aria-label="スライドのページ送り">…</div>
+```
+
+スライダー root の詳細は `web-coding-swiper.mdc` の「アクセシビリティ（root）」を参照。
+
+## `br` のレスポンシブ改行
+
+レスポンシブで改行の ON/OFF が必要な場合、`<br>` には **`p-*` / `c-*` クラスを付けない**。必ず `src/assets/sass/utility/u-disp.scss` のユーティリティを使うこと。
+
+| 用途 | クラス | 挙動 |
+| --- | --- | --- |
+| SP のみ改行 | `u-md-hidden` | SP: 改行あり / PC（768px〜）: 改行なし |
+| PC のみ改行 | `u-md-visible` | SP: 改行なし / PC（768px〜）: 改行あり |
+| lg / xl 以降のみ | `u-lg-visible` / `u-xl-visible` 等 | 既存ユーティリティを用途に合わせて選択 |
+
+```html
+<!-- SP のみ改行 -->
+モンゴル遊牧民の暮らしが気になる<br class="u-md-hidden" />
+
+<!-- PC のみ改行 -->
+知れる<br class="u-md-visible" />モンゴル遊牧民体験ツアー
+```
+
+- 装飾目的の `br` には `aria-hidden="true"` を付与可（`p-footer__note` の既存パターン）
+- **禁止:** `class="p-xxx__lead-br--sp-only"` のような `p-*` 専用 `br` クラス
+- 標準 BP（`mq(md)` 等）で足りない場合は、先に `u-disp.scss` にユーティリティを追加してから HTML で参照する（詳細は `web-coding-scss.mdc`）
+
+## 画像
+
+- パスは `/img/...` のみ（`src/assets/img` は参照しない）
+- `width` と `height` を必ず指定（CLS対策）。
+- **遅延読み込み:** FV（`.p-fv`）とヘッダー（`.l-header`）**以外**のすべての `<img>` に `loading="lazy"` を必ず付与すること。
+- **デコード:** すべての `<img>` に `decoding="async"` を付与すること（FV・ヘッダー含む）。
+
+### `loading` 属性の付与ルール
+
+| 範囲 | `loading="lazy"` | 判定基準 |
+| --- | --- | --- |
+| `.l-header` 内 | 付けない | `<header class="l-header">` 配下のすべての `<img>`（ロゴ・ナビアイコン等） |
+| `.p-fv` 内 | 付けない | `<section class="p-fv">` 配下のすべての `<img>`（背景・見出し画像・スライド2以降も含む） |
+| 上記以外 | **必須** | `main` 以降の各セクション、フッター、モーダル（`</body>` 直前）等 |
+
+```html
+<!-- ⭕ ヘッダー: lazy なし -->
+<header class="l-header">
+  <img src="/img/logo.webp" alt="サイト名" width="114" height="50" decoding="async" />
+</header>
+
+<!-- ⭕ FV: lazy なし（初回スライドは fetchpriority="high" も可） -->
+<section class="p-fv">
+  <img src="/img/img_fv-1-sp@2x.webp" alt="…" width="390" height="580" fetchpriority="high" decoding="async" />
+</section>
+
+<!-- ⭕ それ以外: lazy 必須 -->
+<img src="/img/photo_sample.webp" alt="説明文" width="400" height="300" loading="lazy" decoding="async" />
+
+<!-- ❌ FV・ヘッダーに lazy を付けないこと -->
+<img src="/img/logo.webp" alt="サイト名" width="114" height="50" loading="lazy" decoding="async" />
+```
+
+### imgタグ実装ルール
+
+**1. ラッパー必須**
+スタイリングしやすいよう、`<img>` は必ず `<div>` または `<figure>` でラップすること。コンテンツとして意味を持つ画像（キャプションが付く・独立した図版）には `<figure>`、装飾・レイアウト目的には `<div>` を選択する。
+
+```html
+<!-- コンテンツ画像（figure推奨） -->
+<figure class="p-card__figure">
+  <img src="/img/photo_sample.webp" alt="説明文" width="400" height="300" loading="lazy" decoding="async" />
+</figure>
+
+<!-- レイアウト用（div可） -->
+<div class="p-fv__img">
+  <img src="/img/photo_hero.webp" alt="説明文" width="1440" height="900" decoding="async" />
+</div>
+```
+
+**1-1. 配置ラッパーと画像ラッパーの二重化禁止**
+配置（`position: absolute` / `inset` / `transform`）と画像サイズ（`width` / `height` / `overflow: hidden`）を別要素に分けない。1要素に集約すること。
+
+```html
+<!-- ❌ 禁止: 配置用 div + サイズ用 div の二重ラップ -->
+<div class="p-xxx__deco p-xxx__deco--horse" aria-hidden="true">
+  <div class="p-xxx__deco-figure">
+    <picture>…</picture>
+  </div>
+</div>
+
+<!-- ⭕ 装飾・absolute 配置: figure 1要素に集約 -->
+<figure class="p-xxx__deco p-xxx__deco--horse" aria-hidden="true">
+  <picture>…</picture>
+</figure>
+
+<!-- ⭕ 親がインタラクション要素で figure が不適な場合のみ picture にクラス -->
+<a href="#form" class="c-floating-cta__link">
+  <picture class="c-floating-cta__figure">…</picture>
+</a>
+```
+
+- 装飾・absolute 配置の画像 → `<figure>` を優先（画像ラッパー規約と配置スタイルを同時に満たす）
+- `picture` に直接クラスを付けるのは、親が `<a>` 等で `figure` が不適な場合のみ
+- **例外:** 配置基準とクリップ/サイズ基準が別要素である必要があるときのみ二重ラップ可（`transform-origin` の分離など、技術的理由が明確な場合）
+
+**2. `img` のベーススタイルは `base.scss` で管理**
+`src/assets/sass/common/base.scss` に `img` タグのリセット・ベーススタイル（`object-fit: cover` 等）が定義されている。指示がない限り、各コンポーネントのSCSSで `img` タグのベース挙動を上書き・再定義しないこと。
+
+**3. `alt` 属性の記述ルール**
+ファイル名のプレフィックスによって `alt` の記述方針を切り替える。
+
+| ファイル名のプレフィックス | `alt` の扱い | 理由 |
+| --- | --- | --- |
+| `deco_` | `alt=""` | 装飾目的のため空文字 |
+| `bg_` | `alt=""` | 背景として使う画像のため空文字 |
+| `icon_` | `alt=""` | 隣接するテキストが意味を補完するため空文字（単独で意味を持つ場合は除く） |
+| 上記以外 | **必ず内容を説明するテキストを入力** | コンテンツ画像はスクリーンリーダー等に情報を伝える |
+
+```html
+<!-- deco_ / bg_ / icon_ は alt="" -->
+<img src="/img/deco_wave.webp" alt="" width="1440" height="80" loading="lazy" decoding="async" />
+<img src="/img/bg_about.webp" alt="" width="1440" height="600" loading="lazy" decoding="async" />
+<img src="/img/icon_arrow.svg" alt="" width="16" height="16" loading="lazy" decoding="async" />
+
+<!-- それ以外は説明文を入力 -->
+<img src="/img/photo_tour-01.webp" alt="沖縄の海でシュノーケリングを楽しむ参加者" width="400" height="300" loading="lazy" decoding="async" />
+```
+
+## カード（`.c-card` / `.c-card-*`）のマークアップ規約
+
+カードコンポーネントは**アクセシビリティのためにHTMLの記述順とCSSの視覚順を分離**する。
+
+### 絶対ルール: テキスト先・画像後
+
+- **HTMLのDOMの順序:** `テキスト（タイトル・本文・CTAなど）→ 画像（`<figure>`）`の順で必ずマークアップすること。
+- **理由:** スクリーンリーダーはDOMの順序で読み上げる。画像が先にあると「画像の説明→タイトル→本文」という不自然な読み上げ順になり、コンテキストが失われる。
+- **視覚上の順序:** CSSの `order` プロパティ（Flex / Grid使用時）で画像を視覚的に先頭に移動させること。
+
+```html
+<!-- ✅ 正しいHTML記述順（テキスト → 画像） -->
+<article class="c-card">
+  <div class="c-card__body">
+    <h3 class="c-card__title">カードタイトル</h3>
+    <p class="c-card__text">説明テキスト</p>
+  </div>
+  <figure class="c-card__figure">
+    <img src="/img/photo_sample.webp" alt="説明文" width="400" height="300" loading="lazy" decoding="async" />
+  </figure>
+</article>
+
+<!-- ❌ 禁止（画像 → テキストの順）スクリーンリーダーの読み上げが不自然になる -->
+<article class="c-card">
+  <figure class="c-card__figure">…</figure>
+  <div class="c-card__body">…</div>
+</article>
+```
+
+### SCSS側での視覚順調整
+
+視覚上「画像→テキスト」の順で表示したい場合は、`order` で制御する。
+
+```scss
+// 視覚上は 画像（figure）→ テキスト（body）の並びにする例
+.c-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-card__figure {
+  order: -1; // 視覚的に先頭に移動
+}
+
+.c-card__body {
+  order: 0; // デフォルト（明示不要だが可読性のために書いても可）
+}
+```
+
+- `order` はあくまで視覚上の並び替えのみ。**DOMの順序（HTML）は絶対に変えない**こと。
+- Gridレイアウトの場合は `grid-row` / `grid-column` または `grid-template-areas` で同様に制御する。
+
+## 特殊文字のエスケープ
+
+要素のテキスト内容および属性値に、以下の特殊文字が含まれる場合は必ず HTML エンティティに変換すること。
+
+| 文字 | エンティティ |
+| --- | --- |
+| `<` | `&lt;` |
+| `>` | `&gt;` |
+| `&` | `&amp;` |
+| `"` | `&quot;` |
+| `'` | `&apos;` |
+
+### 適用範囲
+
+- **対象:** 要素のテキスト内容（`<p>`, `<span>`, `<h2>` 等の開始・終了タグの間）、属性値（`alt`, `title`, `content`, `aria-label`, `href` 等）
+- **対象外:** HTML タグ構文そのもの（`<div>`, `class="..."` の区切り記号など）
+
+### 注意事項
+
+- `&` は他の文字より**先に**エスケープすること（二重変換防止）
+- 日本語の鉤括弧 `「」` は ASCII の `"` ではないためエスケープ不要
+
+```html
+<!-- ⭕ テキスト内の & -->
+<p>モンゴリカホテル&amp;リゾート</p>
+
+<!-- ⭕ 属性値内の &（URL 含む） -->
+<link href="https://example.com?a=1&amp;b=2" rel="stylesheet" />
+
+<!-- ⭕ 比較・不等号をテキストで表示する場合 -->
+<p>10&lt;20、30&gt;25</p>
+
+<!-- ⭕ 属性値内の引用符 -->
+<p aria-label="Tom&apos;s tour">…</p>
+
+<!-- ❌ テキストに生の & -->
+<p>ホテル&リゾート</p>
+```
+
+## 避ける例
+
+- 見出しなしの `<section>`
+- 同ページに複数の `<h1>`
+- `href="#"` だけのダミーリンク（スムーススクロール用は `button` または有効な ID）
+- 意味のない `title` 属性の乱用
+- href="#" だけのダミーリンク（スムーススクロール用は button または有効な ID）
+- カードの画像をテキストよりDOMで先に書く（スクリーンリーダー対策のため禁止）

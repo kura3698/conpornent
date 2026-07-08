@@ -1,0 +1,160 @@
+@use "../config/" as *;
+
+// ==========================================
+//  ライブラリページ 共通ヘッダー
+// ==========================================
+
+.p-lib-header {
+  background: #2b2b2b;
+  padding-block: rm(12);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: $z-header;
+}
+
+.p-lib-header__inner {
+  display: flex;
+  align-items: center;
+  gap: rm(16);
+  padding-inline: rm($pc-sidePadding);
+  max-inline-size: px($pc-inner-sum);
+  margin-inline: auto;
+
+  @include mq(md) {
+    padding-inline: rm($sp-sidePadding);
+  }
+}
+
+.p-lib-header__back {
+  font-size: rm(13);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+
+  &:focus-visible {
+    outline: 2px solid $accent-green;
+    outline-offset: 2px;
+  }
+
+  @media (any-hover: hover) {
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.p-lib-header__brand {
+  font-family: $ff-en;
+  font-size: rm(14);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+}
+
+.p-lib-header__category {
+  font-size: rm(13) !important;
+  font-weight: 700;
+  color: #fff;
+  text-align: start;
+  margin-block-end: 0 !important;
+  margin-inline-start: auto;
+}
+
+// ==========================================
+//  ページタイトル
+// ==========================================
+
+.p-lib-page-title {
+  font-size: rm(32) !important;
+  margin-block-end: rm(40) !important;
+  text-align: center;
+  font-family: $ff-en;
+  font-weight: 700;
+  color: #2b2b2b;
+  letter-spacing: 0.03em;
+}
+
+// ==========================================
+//  スニペットブロック
+// ==========================================
+
+.c-snippet {
+  width: 100%;
+  margin-block-end: rm(40);
+}
+
+.c-snippet__meta {
+  display: flex;
+  align-items: center;
+  gap: rm(12);
+  padding: rm(10) rm(16);
+  background: #2b2b2b;
+  border-radius: rm(8) rm(8) 0 0;
+  flex-wrap: wrap;
+
+  @include mq(md) {
+    padding: rm(8) rm(12);
+    gap: rm(8);
+  }
+}
+
+.c-snippet__title {
+  font-size: rm(14) !important;
+  font-weight: 700;
+  color: #fff;
+  flex: 1;
+  min-inline-size: rm(120);
+  text-align: start;
+  line-height: 1.4 !important;
+}
+
+.c-snippet__scss {
+  font-size: rm(11);
+  color: $accent-green;
+  font-family: "Courier New", Courier, monospace;
+  background: rgba(255, 255, 255, 0.08);
+  padding: rm(2) rm(8);
+  border-radius: rm(4);
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.c-snippet__copy {
+  font-size: rm(12);
+  font-weight: 700;
+  color: #2b2b2b;
+  background: #fff;
+  border-radius: rm(4);
+  padding: rm(4) rm(14);
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:focus-visible {
+    outline: 2px solid $accent-green;
+    outline-offset: 2px;
+  }
+
+  @media (any-hover: hover) {
+    &:hover {
+      background: $accent-green;
+      color: #fff;
+    }
+  }
+}
+
+.c-snippet__demo {
+  padding: rm(48) rm(24);
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-block-start: none;
+  border-radius: 0 0 rm(8) rm(8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rm(24);
+
+  @include mq(md) {
+    padding: rm(32) rm(16);
+  }
+}

@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",()=>{var t=document.querySelectorAll(".js-copy-btn");t.length&&t.forEach(e=>{e.addEventListener("click",async()=>{var t=document.getElementById(e.dataset.target);if(t){try{await navigator.clipboard.writeText(t.innerHTML.trim()),e.textContent="コピー完了！"}catch{e.textContent="コピー失敗"}setTimeout(()=>{e.textContent="HTMLをコピー"},2e3)}})})});

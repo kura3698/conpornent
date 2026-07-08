@@ -1,0 +1,1086 @@
+---
+description: SCSS コーディング規約（FLOCSS風・関数・mixin）
+globs: "**/*.scss"
+alwaysApply: true
+---
+
+# SCSS ルール
+
+## ⚠️ AI作業時の厳守事項（ガードレール）
+
+- **ハードコード厳禁:** 新しい色（HEXコード）、フォントサイズ、余白などをベタ書きしない。**必ず `variables.scss` などの既存の変数や関数を使用**すること（数値の出所不明な直書き = マジックナンバー → **`マジックナンバー禁止`** 節を参照）。
+- **BEMクラスの無断生成禁止:** 勝手に新しいコンポーネントクラスを作成する前に、既存のUtility（`u-`）やLayout（`l-`）で解決できないか検討すること。
+- **`br` 改行の表示切替:** `pages/` や `components/` に `br` の `display` 切替専用セレクタ（例: `.p-xxx__lead-br--sp-only`）を新規作成しない。`u-disp.scss` のユーティリティを使う（HTML 側の詳細は `web-coding-html.mdc`）。
+- **自動生成ファイル保護:** 各層の `index.scss` はGulpによる自動生成のため**【編集厳禁】**。スタイル追加は必ず各パーシャルファイル（`_*.scss`）に行うこと。
+- **full-bleed 背景:** セクション全幅背景に `margin-inline: calc(50% - 50vw)` と `$pc-camp` 固定幅の併用は禁止。詳細は **`Safari 横ずれ防止（full-bleed 背景）`** 節を参照。
+
+## フォルダ
+
+`config/` `common/` `layout/` `components/` `pages/` `utility/` — `gulpfile.js` の `scssDirs` と一致。
+
+## 記法
+
+- `@use` / `@forward` のみ（`@import` 禁止）
+- パーシャル先頭: `@use "../config/" as *;`
+
+## 命名（BEM）
+
+| 層        | 接頭辞 |
+| --------- | ------ |
+| Layout    | `l-`   |
+| Component | `c-`   |
+| Page      | `p-`   |
+| Utility   | `u-`   |
+
+- 要素 `__` / 修飾 `--` / 状態 `.is-open` 等（`.is-*`）
+
+### `br` 改行の表示切替（`u-disp.scss`）
+
+- `<br>` のレスポンシブ改行は **`utility/u-disp.scss` の `u-*` クラスのみ**で制御する
+- `pages/` / `components/` に `br` 向けの `display: none` / `display: inline` 等を書かない
+- 標準 BP（`mq(md)` 等）で足りない場合は、**先に `u-disp.scss` にユーティリティを追加**してから HTML で参照する（`p-*` に閉じ込めない）
+- 例: `$pc-inner-sum`（1060px）基準の改行が必要なら `u-pc-inner-visible` 等を `u-disp.scss` 側で定義
+
+## レスポンシブとレイアウトの厳格な実装ルール
+
+AIは `variables.scss` に定義された以下のフラグを読み取り、実装方針を切り替えること。
+
+### 1. ブレイクポイント方針（`$responsive-strategy`）
+
+- `mobile-first` の場合: `min-width` でPCに向けて上書きしていく。
+- `pc-first` の場合: `max-width` でSPに向けて上書きしていく。
+  ※ `mixin.scss` はこの変数に応じてメディアクエリを自動生成するため、直接編集しないこと。
+
+### 2. リキッド設計フラグ（`$is-liquid-layout`）によるコーディングの分岐
+
+- **`true`（リキッドレイアウト）の場合:**
+  - `base.scss` で `html` の `font-size` が `vw` で可変するよう設定されているため、各コンポーネントで直接 `vw` や `clamp()` を多用する必要はない。
+  - 幅、余白（padding/margin）、フォントサイズは基本的に **`rem`** で指定すること。これにより、ルートの可変に追従して自動的にスケールダウンする。
+  - （※案件で用意されている `rem()` 変換用のSCSS関数があればそれを優先使用すること）
+- **`false`（固定幅レイアウト）の場合:**
+  - `$pc-inner` や `$sp-inner` で指定された固定コンテナ幅と、`margin-inline: auto`（中央寄せ）をベースにする。
+  - フォントサイズや余白は `px` または `rem` で指定し、ブレイクポイントで数値を切り替える従来の実装を行うこと。
+  - `clamp()`の使用を制限するものではない。
+
+## レイアウト（l-inner）
+
+- **モバイルファースト**: ベース=SP、`@include mq(md)` 以上=PC
+- ❌ PCスタイルをベースに `mq(sm)` で SP を上書きしない
+
+### Grid vs Flexbox
+
+基本方針として、要素の配置には `display: grid` を優先して採用してください。CSS Gridによる2次元的で堅牢な構造構築をデフォルトとします。
+
+ただし、`display: flex` の方が適している以下の例外パターンにおいては、Flexboxを積極的に使用してください。
+
+- 余白は`gap`で調整してください。
+
+**例外的に Flexbox を使用するケース：**
+
+- **コンテンツベースの流動的なレイアウト:**
+  - アイテムの幅が一定ではなく、内部のテキスト量に依存する場合（例：タグのリスト、パンくずリスト）。
+- **シンプルな1方向（1次元）の配置:**
+  - ヘッダー内のメニュー項目や、横に並ぶアイコン付きボタンなど、単一軸での均等配置や整列のみが必要な場合。
+- **柔軟な折り返しが主目的の場合:**
+  - 画面幅に応じて自然に要素を折り返したい（`flex-wrap: wrap`）要素群の場合。
+
+**実装時の思考プロセス:**
+
+1. まず「Gridで組むべきか？」を考える（列数や行数が明確か？全体構造か？）。
+2. 「ただ横に並べるだけ」「中身のサイズに合わせて並べたいだけ」であれば Flexbox に切り替える。
+
+## 関数・mixin
+
+`rm()` `px()` `vw()` `vw-sp()` `rclamp()` / `@include mq(md)` / `@include font()` / `@include visually-hidden`
+
+ブレイクポイント: `xs:480` `sm:600` `md:768` `lg:960` `xl:1280` `xxl:1440`
+
+### `@include font()` の line-height ルール
+
+`@include font($size, $weight, $height, $spacing)` の第3引数 `$height` は **unitless の比率**（例: `1.5`）で渡すこと。ミックスインは計算を行わず `line-height: $height` をそのまま出力する。
+
+⭕ 良い例
+
+```scss
+.p-card__text {
+  @include font(16, 400, 1.5);      // line-height: 1.5 が出力される
+  @include font(14, 400, 1.7);      // line-height: 1.7 が出力される
+  @include font(18, 700, 1.5, 0.9); // letter-spacing も指定する場合
+}
+```
+
+❌ 悪い例
+
+```scss
+.p-card__text {
+  @include font(16, 400, 24); // 【禁止】px値を渡すと line-height: 24 になる
+  @include font(14, 400, 1.7 * 14); // 【禁止】事前計算も不要
+}
+```
+
+## 例
+
+```scss
+@use "../config/" as *;
+
+.l-inner {
+  max-width: px($sp-inner-sum);
+  padding: 0 rm($sp-sidePadding);
+  @include mq(md) {
+    max-width: px($pc-inner-sum);
+    padding: 0 rm($pc-sidePadding);
+  }
+}
+```
+
+## 📐 単位と独自関数（`rm()`）の利用ルール
+
+要素のサイズ（width/height）、余白（margin/padding）、フォントサイズ（font-size）など、デザインカンプの指定が `px` の場合は、直接 `px` や手計算した `rem` を記述せず、必ず `src/assets/sass/config/functions.scss` にある **`rm()` 関数** を使用すること。
+
+### rm() 関数の仕様
+
+```scss
+@function rm($arg) {
+  @return calc($arg / 16 * 1rem);
+}
+```
+
+⚠️ AIが守るべき絶対ルール
+
+- 引数は【単位なしの数値のみ】とする: rm(24px) のように単位を付けるとSassのコンパイルエラーや意図しない計算結果になるため、必ず rm(24) のように数値だけを渡すこと。
+- ファイルの自動インポート: rm() 関数を使用する際、該当ファイルで @use "../config/functions" as \*;（またはプロジェクト指定の読み込みパス）が必要な場合は、AIが自律的に先頭行へ記述すること。
+
+⭕ 良い例（AIが従うべき記法）
+SCSS
+.p-card {
+width: rm(300); // 300px の場合
+padding: rm(20) rm(15); // 上下20px、左右15px の場合
+font-size: rm(16); // 16px の場合
+}
+❌ 悪い例（AIがやりがちな禁止パターン）
+SCSS
+.p-card {
+width: 18.75rem; // 【禁止】手計算した rem を直書きしない（可読性が落ちる）
+padding: rm(20px); // 【禁止】引数に px を付けない（エラーの原因）
+font-size: 16px; // 【禁止】関数を使わずに px を直書きしない
+}
+
+## マジックナンバー禁止ルール
+
+プロパティ値に**意味のない生数字**を直書きすることを禁止する。数値には必ず出所（カンプ px・親要素サイズ・共通変数）を持たせること。
+
+※ 単位変換の詳細は上記 **`rm()` ルール** を参照。共通レイアウト値は **`variables.scss`** を参照。
+
+### 優先順位
+
+1. **`variables.scss` の共通変数**（`$pc-camp`, `$sp-sidePadding`, `$z-header` 等）
+2. **ファイル先頭のローカル変数**（カンプ px + 用途コメントで集約）
+3. **変換関数**（`rm()`, `vw()`, `vw-sp()`, `rclamp()`）でプロパティ値に適用
+
+### ローカル変数の書き方
+
+カンプ値はファイル先頭に、**略語を使わない変数名 + 単位なし数値 + 用途コメント**で命名・集約する。
+
+```scss
+// FV テキスト配置（カンプ上の px）
+$fv-pc-height: 700;
+$fv-text-pc-inset-block: 200;
+$fv-text-pc-inset-block-ratio: math.div($fv-text-pc-inset-block, $fv-pc-height) * 100%;
+```
+
+### 変数命名（略語禁止）
+
+- ローカル変数名は **CSS プロパティ名・用途が誰の目にも分かる完全な単語** で書く
+- `mb` / `mt` / `pad` / `w` / `h` / `gap` などの略語は禁止
+- ブレイクポイント接尾辞 `-sp` / `-pc` は案件で確立しているため **許可**
+- 比率・計算結果の変数も、何の比率かを名前に含める（`$inset-ratio` ではなく `$fv-text-pc-inset-block-ratio` 等）
+
+| 略語（禁止） | 正しい例 |
+| --- | --- |
+| `mb` | `margin-block-end` |
+| `mt` | `margin-block-start` |
+| `pad` | `padding` / `padding-block` / `padding-inline` |
+| `w` | `width` |
+| `h` | `height` |
+
+⭕ 良い例
+
+```scss
+$card-margin-block-end-sp: 41;
+$accordion-focus-outline-width: 2;
+$fv-text-pc-inset-block-ratio: math.div($fv-text-pc-inset-block, $fv-pc-height) * 100%;
+```
+
+❌ 悪い例
+
+```scss
+$card-mb-sp: 41; // 【禁止】mb は margin-block-end の略
+$accordion-focus-outline-w: 2; // 【禁止】w は width の略
+$inset-ratio: ...; // 【禁止】何の比率か不明
+```
+
+### コメントの書き方
+
+- コメントは **誰が見ても意味が分かる、簡潔な一文** とする
+- 「何の値か（要素・用途）」と「どこ基準か（カンプ px / SP・PC）」を書く
+- 略語・記号だけのコメント（`// mb` `// SP` 単体）は禁止
+- 変数名で十分伝わる場合はコメント省略可（無意味な重複コメントは書かない）
+
+⭕ 良い例
+
+```scss
+// FV テキストの上端位置（カンプ PC 700px 基準）
+$fv-text-pc-inset-block: 200;
+
+// カード下余白（カード下端 ↔ テーブル見出し上端、カンプ SP 41px）
+$card-margin-block-end-sp: 41;
+```
+
+❌ 悪い例
+
+```scss
+$card-margin-block-end-sp: 41; // mb  // 【禁止】略語のみで意味が伝わらない
+$fv-text-pc-inset-block: 200; // 200px  // 【禁止】数値の繰り返しだけ
+```
+
+- 2箇所以上で使う値は `variables.scss` へ昇格する
+- **例外（直書き可）:** `0`, `100%`, `auto`, `1fr`, `z-index` の `$z-*` など文脈上自明な値
+
+### AIへの短い指示例
+
+| 指示フレーズ | 意味 |
+| --- | --- |
+| `マジックナンバー禁止` | 生数字直書きをやめ、変数 + 関数に置き換える |
+| `カンプ値はファイル先頭に変数化` | デザイン px を `$xxx: 数値;` で集約してから使う |
+| `共通値は variables に` | 複数ファイルで使う値を `variables.scss` へ移す |
+| `変数は略さない` | `mb` `pad` `w` 等の略語をやめ、完全な単語で命名する |
+| `コメントは簡潔に` | 誰が見ても分かる一文で、要素・用途・基準を書く |
+
+⭕ 良い例
+
+```scss
+// FV テキストの上端位置（カンプ PC 700px 基準）
+$fv-pc-height: 700;
+$fv-text-pc-inset-block: 200;
+$fv-text-pc-inset-block-ratio: math.div($fv-text-pc-inset-block, $fv-pc-height) * 100%;
+
+.p-fv__content {
+  inset-block-start: $fv-text-pc-inset-block-ratio;
+  margin-block-start: rm($sp-sidePadding);
+}
+```
+
+❌ 悪い例
+
+```scss
+.p-fv__content {
+  inset-block-start: 28.57%; // 【禁止】出所不明の比率
+  margin-block-start: rm(47); // 【禁止】カンプ根拠のない数値
+}
+
+$card-mb-sp: 41; // 【禁止】変数名の略語（mb）とコメント不足
+```
+
+## 相対配置（position）ルール
+
+要素の重ね合わせ・オーバーレイ配置は、以下の優先順位で実装する。
+
+※ `inset` の方向指定は **`論理プロパティ（block / inline）`** 節を参照。数値の出所は **`マジックナンバー禁止`** 節を参照。
+
+### 配置パターン早見表
+
+| 用途 | 推奨手法 |
+| --- | --- |
+| フロー内配置 | Flex / Grid（`margin`, `gap`, `align`） |
+| セクション内重ね | Grid オーバーレイ（同一 `grid-area` で重ねる） |
+| セクション全幅背景 | Grid 重ね + 親 `overflow: hidden` + 子 `absolute; inset: 0` + `object-fit: cover`（`50vw` ハック禁止） |
+| 装飾・バッジ | 親 `relative` + 子 `absolute` + 比率 inset |
+
+### 基本ルール
+
+- **Grid / Flex を第一選択。** `position: absolute` は重ね合わせ・装飾バッジ等、レイアウトフロー外が必要な場合のみ使う
+- 子に `position: absolute` → 親（または Grid オーバーレイ親）に `position: relative` を必ず付与
+- **Grid 重ね（推奨）:** `display: grid` + 子要素を同一 `grid-area: 1 / 1` で重ねる（`p-fv.scss` パターン）
+- **`top` / `left` 等の物理方向 inset は禁止。** `inset-block-start` 等の論理プロパティを使う
+- カンプ px の inset は **親要素またはカンプ幅に対する比率（%）** または `vw()` / `vw-sp()` / `clamp()` に変換する。生 px の inset 直書きは禁止
+- SP 幅依存の配置: `vw-sp()` または `calc(100vw * $px / $sp-camp)`
+- PC 固定幅: `rm()` + `clamp()` で min/max を `$pc-sidePadding` 等の既存変数と組み合わせる
+
+### AIへの短い指示例
+
+| 指示フレーズ | 意味 |
+| --- | --- |
+| `相対配置ルールで` | Grid 優先・比率 inset で実装する |
+| `カンプ px を比率変換` | `math.div(配置px, 親px) * 100%` で inset に使う |
+| `absolute 直書き inset 禁止` | inset 値は必ず変数・関数経由にする |
+
+⭕ 良い例
+
+```scss
+.p-fv__slide {
+  display: grid;
+
+  > .p-fv__bg,
+  > .p-fv__content {
+    grid-area: 1 / 1;
+  }
+}
+
+.p-fv__content {
+  position: absolute;
+  inset-block-start: $fv-text-sp-inset-block-ratio;
+  inset-inline-start: rm($sp-sidePadding);
+}
+```
+
+❌ 悪い例
+
+```scss
+.p-feature__head-badge {
+  position: absolute;
+  top: rm(12); // 【禁止】物理方向 + マジックナンバー
+  left: rm(-8);
+}
+```
+
+## Safari 横ずれ防止（full-bleed 背景）
+
+セクション全幅の背景画像を PC 域で表示する際、Safari で横方向にずれる原因になりやすいパターンを禁止し、代替実装を統一する。
+
+### 禁止パターン
+
+| パターン | 問題 |
+| --- | --- |
+| `margin-inline: calc(50% - 50vw)` と `$pc-camp` 固定幅の子要素の併用 | Safari が `%` と `vw` の合成を Chrome と異なる解釈し、**viewport がカンプ幅未満の PC 域（例: 1060〜1439px）で横ずれ**しやすい |
+| PC 用 MQ 内で `width: rm($pc-camp)` 固定 + full-bleed | 上記と同根。viewport より子が広くなる |
+
+### 推奨パターン（Grid 重ね + absolute fill）
+
+参照実装: `p-message.scss` / `p-info.scss`（1060px 以上部分）
+
+```scss
+// セクション: grid 重ね
+.p-xxx {
+  display: grid;
+  overflow-x: hidden;
+}
+
+.p-xxx__head {
+  position: relative;
+  grid-area: 1 / 1;
+  overflow: hidden;
+}
+
+.p-xxx__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.p-xxx__bg picture,
+.p-xxx__bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+```
+
+- **`calc(50% - 50vw)` は使わない**
+- 背景は **親（head）の 100% にフィット**させ、viewport 幅に追従させる
+
+### メディアクエリ表記
+
+`$pc-inner-sum` 相当の BP 用 mixin では、nested `calc` を MQ に渡さない。
+
+```scss
+// NG
+@media screen and (min-width: calc(#{$pc-inner-sum} * 1px)) { ... }
+
+// OK（p-service-mongol の mq-cta-pc と同型）
+$section-pc-min-width: $pc-inner + $pc-sidePadding * 2;
+@media screen and (min-width: #{$section-pc-min-width}px) { ... }
+```
+
+### AIへの短い指示例
+
+| 指示フレーズ | 意味 |
+| --- | --- |
+| `Safari full-bleed ルールで` | `50vw` ハック禁止・absolute fill + object-fit cover |
+| `full-bleed 背景は grid 重ね` | セクション grid + head relative + bg absolute inset 0 |
+
+⭕ 良い例
+
+```scss
+.p-info__head {
+  position: relative;
+  overflow: hidden;
+}
+
+.p-info__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.p-info__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+```
+
+❌ 悪い例
+
+```scss
+.p-info__bg {
+  margin-inline: calc(50% - 50vw); // 【禁止】Safari で横ずれの原因
+
+  picture {
+    width: rm($pc-camp); // 【禁止】viewport より広くなる
+    height: rm(1000);
+  }
+}
+```
+
+## 論理プロパティ（block / inline）の利用ルール
+
+パディング・マージン・配置（`inset`）など、縦横の方向を表す記述は、**基本的に物理方向（`top` / `right` / `bottom` / `left`）ではなく論理プロパティ（`block` / `inline`）を使用**すること。`position: absolute` での配置値は **`相対配置（position）ルール`** に従う。
+
+| 物理（避ける）   | 論理（推奨）           |
+| ---------------- | ---------------------- |
+| `padding-top`    | `padding-block-start`  |
+| `padding-bottom` | `padding-block-end`    |
+| `padding-left`   | `padding-inline-start` |
+| `padding-right`  | `padding-inline-end`   |
+| `margin-top`     | `margin-block-start`   |
+| `margin-bottom`  | `margin-block-end`     |
+| `margin-left`    | `margin-inline-start`  |
+| `margin-right`   | `margin-inline-end`    |
+| `top`            | `inset-block-start`    |
+| `bottom`         | `inset-block-end`      |
+| `left`           | `inset-inline-start`   |
+| `right`          | `inset-inline-end`     |
+
+- 上下・左右をまとめる場合は `padding-block` / `padding-inline`、`margin-block` / `margin-inline` も可。
+- 数値は引き続き `rm()` を使用する（例: `padding-block-start: rm(1);`）。
+- 日本語横書き（`writing-mode: horizontal-tb`）が前提。RTL 対応や将来の多言語化を見据えた記述とする。
+
+⭕ 良い例
+
+```scss
+.l-header__inner {
+  padding-block: rm(20);
+  padding-inline: rm($sp-sidePadding);
+  margin-inline: auto;
+}
+
+.c-drawer {
+  inset: 0; // 全方向ゼロは inset ショートハンド可
+  padding-block-start: rm(70);
+}
+
+.p-card {
+  margin-block-end: rm(16);
+  border-inline-start: rm(2) solid $main-color;
+}
+```
+
+❌ 悪い例
+
+```scss
+.l-header__inner {
+  padding-top: rm(20); // 【非推奨】→ padding-block-start
+  padding-left: rm(20); // 【非推奨】→ padding-inline-start
+  margin-left: auto; // 【非推奨】→ margin-inline-start（中央寄せは margin-inline: auto）
+}
+
+.c-drawer {
+  top: 0;
+  left: 0; // 【非推奨】固定配置の基準は inset-block-start / inset-inline-start 等
+}
+```
+
+## ⚠️ ネスト（階層）とスコープの厳格なルール
+
+AIはトークン節約のために `&__` を使いたがりますが、検索性と保守性を担保するため、以下のルールを**【絶対厳守】**すること。
+
+- **要素（`__`）と修飾（`--`）のネスト結合禁止:** `&__element` や `&--modifier` のような親結合は使用せず、ベース Block / Element は**独立したセレクタ（ルートレベル）**として記述すること。
+- **修飾子コンテキスト上書きのネストは許可:** 同一 Block の修飾子（`.c-card--plan`）が子 Element（`.c-card__body`）を上書きする場合、修飾子ブロック内に `.c-card__body` をフルクラス名でネストしてよい。`&__element` は使わない。適用範囲は同一コンポーネント内の `Block--modifier` → `Block__element` のみ。
+- **状態・疑似クラスのネストは許可:** 状態クラス（`.is-active` 等）、疑似クラス（`:hover`, `:first-child` 等）、疑似要素（`::before` 等）、メディアクエリ（`@include mq(md) `等）は、親セレクタの中にネストして記述すること。
+- **Block同士のネスト禁止:** 別のコンポーネントをネストして上書きしない（例: `.c-card { .c-btn { ... } }` は禁止）。`.p-* .c-*` のネストも引き続き禁止。
+
+### ⭕ 良い例（AIが従うべき記法）
+
+```scss
+.c-card {
+  padding: 10px;
+
+  // 状態や疑似クラスはネストOK
+  &.is-active {
+    background-color: #fff;
+  }
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// ベース要素はルートレベルに独立記述
+.c-card__title {
+  font-size: 16px;
+}
+
+.c-card--primary {
+  background-color: blue;
+}
+
+// 修飾子が子 Element を上書きする場合は修飾子内にネスト
+.c-card--plan {
+  min-height: rm(420);
+
+  .c-card__body {
+    gap: rm(15);
+  }
+}
+```
+
+### ❌ 悪い例（AIがやりがちな禁止パターン）
+
+```scss
+.c-card {
+  padding: 10px;
+
+  // 【禁止】要素や修飾を & で繋がない
+  &__title {
+    font-size: 16px;
+  }
+  &--primary {
+    background-color: blue;
+  }
+}
+
+// 【禁止】&__ 結合による修飾子内上書き
+.c-card--plan {
+  &__body {
+    gap: rm(15);
+  }
+}
+
+// 【禁止】別 Block のネスト
+.c-card--plan {
+  .c-btn {
+    opacity: 0.7;
+  }
+}
+```
+
+## HTML クラスと SCSS の対応（プレースホルダ）
+
+HTML に書いた BEM クラスのうち、**まだ専用プロパティを当てていないもの**も SCSS 側にコメントアウトした空セレクタとして残し、後からスタイルを追加するときの編集箇所を迷わないようにする。
+
+| 項目 | 内容 |
+| --- | --- |
+| 対象 | 同一 SCSS ファイルが担当する `c-*` / `p-*` / `l-*` の BEM クラス |
+| 除外 | `u-*`（utility）、`js-*`（JS フック・スタイル禁止）、`is-*`（状態クラス） |
+| いつ置く | HTML にクラスを追加した時点で、**そのクラス／修飾子コンテキスト用のプロパティが未記述**ならプレースホルダを置く |
+| 記法 | セレクタごとコメントアウトした空ブロック（下記フォーマット） |
+| 配置 | HTML の DOM 順・既存セクション見出し順に合わせる。修飾子内上書きは修飾子ブロック内にネスト |
+| スタイル追加時 | コメントを外してプロパティを記述（プレースホルダを実装に昇格） |
+
+### 標準フォーマット
+
+```scss
+// .c-card__text {
+// }
+```
+
+修飾子ブロック内（修飾子コンテキスト上書きのネスト規約に従う）:
+
+```scss
+.c-card--plan {
+  .c-card__body {
+    gap: rm(15);
+  }
+
+  // .c-card__text {
+  // }
+}
+```
+
+### ⭕ 良い例 / ❌ 悪い例
+
+```scss
+// OK: ルート Element が未スタイル → セクション見出しの下に placeholder
+// .p-feature__badge {
+// }
+
+// OK: 修飾子 HTML に含まれるが修飾子上書きなし → 修飾子内に placeholder
+.c-card--plan {
+  // .c-card__text {
+  // }
+}
+
+// NG: 空セレクタをコメントなしで出力（CSS に無意味なルールが載る）
+.c-card__text {
+}
+
+// NG: js- フックに placeholder を置く
+// .js-card-toggle {
+// }
+```
+
+## コンポーネント・アーキテクチャ（BEM / 余白 / FLOCSS）
+
+FLOCSS の `l-` / `c-` / `p-` 責務を分離し、BEM の Block / Element を軸に設計する。案件ごとのレイヤー定義の詳細は `project.mdc` を参照。UI の変更やクラス追加時は、末尾の**自己検証チェックリスト**で出力前に確認すること。
+
+### 0. Block / Element 定義
+
+| 概念 | 役割 |
+| ---- | ---- |
+| **Block** | 独立したコンポーネント。単体で再利用できる設計を優先する。**外側の余白（margin）を持たない** |
+| **Element** | Block 内部の構成要素。Block 間の余白調整を担当する。**外側余白の付与 OK** |
+
+Block は「どこに配置しても影響を与えない・影響を受けない」粒度で設計する。
+
+| 項目 | ルール |
+| ---- | ------ |
+| サイズ | Block ルート（`.c-button` 等）に固定 `width` / `height` を付けない。`max-width` や子 Element の `width: 100%` は可 |
+| タグ | `h2`, `div` 等のタグセレクタでスタイルを当てない。必ずクラス名に対して指定する |
+
+### 1. プレフィックスと Block の種類（FLOCSS）
+
+| 接頭辞 | 種類 | 責務 | 本案件の例 |
+| ------ | ---- | ---- | ---------- |
+| `c-` | コンポーネント Block | 最小単位・再利用。Element なし or 極めて少ない | `.c-button`, `.c-form-cta__link` |
+| `p-` | Project Block | セクション固有・複合 UI（※他案件の `<p-card>` 型もここに含む） | `.p-form`, `.p-features__item` |
+| `l-` | レイアウト Block | 配置・幅・余白のみ。装飾を持たない | `.l-inner`, `.l-main`, `.l-section` |
+
+### 2. 設計順序
+
+常に**小さい単位から積み上げる**。
+
+```
+最小コンポーネント（.c-button）
+  → コンポーネント群（.c-card + .c-button）
+    → セクション（.p-features + .l-inner）
+      → ページ（.l-main）
+```
+
+### 3. 余白（Spacing）設計
+
+**詳細は `web-coding-spacing.mdc` を参照。** 要点のみ:
+
+- 兄弟間は **`gap` 優先**（親を flex/grid に）
+- `gap` 不可時は **上/左要素**に `margin-block-end` / `margin-inline-end`（下/右への `margin-*-start` は新規禁止）
+- inline 軸の間隔は **`rclamp()` 基本**
+- margin は **Element 側**のみ（Block ルートに外側余白を付けない）
+
+### 4. Modifier（`--`）ルール
+
+**使用してよい（見た目のみ）**
+
+`color`, `background-color`, `border-color`, `box-shadow`, `opacity` 等
+
+```scss
+.c-button { ... }
+.c-button--primary { background-color: $main-color; }
+.c-button--secondary { background-color: $reverse-color; }
+```
+
+**使用しない（構造変更）**
+
+`width`, `height`, `margin`, `padding`, `line-height`, `border-width` 等 → **別 Block** を作る
+
+**例外（レイアウト切り替え Modifier）**
+
+役割が明確な場合のみ許容する（2カラム → 1カラム、左右反転など）。
+
+- 例: `.p-card-list--column`, `.p-card-list--reverse`
+
+### 5. スコープ分離と上書き（絶対厳守）
+
+- `pages/` 内での `.p-* .c-*` ネストは**全面禁止**（レイアウト・見た目・サイズ調整を問わない）
+- `components/` 内で `p-` を参照することも禁止（双方向）
+- コンテキスト依存の微調整は **Project Element の複合クラス**で行う
+
+❌ DON'T
+
+```scss
+.p-features__body .c-button {
+  align-self: center;
+}
+```
+
+⭕ DO
+
+```scss
+.p-features__btn {
+  align-self: center;
+}
+// HTML: class="c-button p-features__btn"
+```
+
+レイアウト差分も同様に **Project 専用クラス**（例: `.p-form__cta`, `.p-voice__item`）で吸収する。
+
+```scss
+// DON'T
+.p-form__footer .c-form-cta {
+  display: grid;
+  gap: rm($form-cta-gap-sp);
+}
+
+// DO
+.p-form__cta {
+  display: grid;
+  gap: rm($form-cta-gap-sp);
+}
+```
+
+### 6. BEM 補足
+
+- Element が入れ子になりそうな場合（例: `.cards__item__link`）は、直近の親を起点とした**新しい Block**として切り出すことを検討する
+- 判断基準: 「〇〇（Block）の〇〇（Element）」という日本語表現が自然に成立するか
+- 要素（`__`）のネスト結合禁止は、上記「ネスト（階層）とスコープの厳格なルール」を参照
+
+### 7. 設計判断の優先順位
+
+1. 再利用可能な最小 Block を作る
+2. Block を組み合わせて大きな UI を作る
+3. レイアウトは `l-` / `p-` Element で管理する
+4. Block に外側余白を持たせない
+5. Element の入れ子が発生したら Block 化を検討する
+6. Modifier は見た目変更のみ。構造変更は新しい Block を作る
+
+### 8. AI 自己検証チェックリスト（実装前）
+
+- `.p-* .c-*` ネストがないか
+- Block ルートに `margin` / 固定サイズがないか
+- 余白は Element または `gap` で管理しているか
+- タグセレクタを使っていないか
+- Modifier が見た目プロパティのみか
+- HTML に追加した BEM クラスが SCSS に実装またはコメントアウト placeholder として存在するか
+
+## transform / transition の記述ルール
+
+回転・移動などにアニメーションを付ける可能性があるプロパティは、個別の `rotate` / `translate` ではなく **`transform` にまとめて記述**すること。`transition` も `transform` を対象にする。
+
+⭕ 良い例
+
+```scss
+.c-hamburger-icon__bar {
+  transform-origin: center;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.c-hamburger-icon.is-open .c-hamburger-icon__bar:nth-child(1) {
+  transform: translateY(rm(8)) rotate(45deg);
+}
+```
+
+❌ 悪い例
+
+```scss
+.c-hamburger-icon__bar {
+  transition:
+    rotate 0.3s ease,
+    translate 0.3s ease; // 【禁止】
+}
+
+.c-hamburger-icon.is-open .c-hamburger-icon__bar:nth-child(1) {
+  translate: 0 rm(8); // 【禁止】アニメ対象は transform にまとめる
+  rotate: 45deg;
+}
+```
+
+## ドロワーメニュー（`.c-drawer`）の実装ルール
+
+- **高さ:** `height: 100svh;` を基本とする（モバイルのアドレスバー対策）。`100vh` のみの指定は避ける。
+- **ホバー:** `.c-drawer__link` などドロワー内リンクに**ホバーアニメーションは基本付けない**（`:hover` による opacity / 色変化等を追加しない）。開閉状態（`.is-open`）と表示切替の transition のみで足りる。
+- **状態クラス:** 開閉の見た目は `.is-open`（`js-` クラスにスタイルを当てない）。
+
+⭕ 良い例
+
+```scss
+.c-drawer {
+  height: 100vh;
+  height: 100svh;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.c-drawer__link {
+  // ホバー・focus の装飾アニメは付けない（仕様）
+}
+```
+
+## インタラクション（ホバー・フォーカス）の厳格ルール
+
+ボタン（.c-btn）やリンク（aタグ）、カードコンポーネントなど、ホバーアニメーションやスタイル変更を行う場合は、キーボード操作（アクセシビリティ）とデバイス特性を考慮し、必ず以下の構造で記述すること。
+
+⚠️ AIが守るべき絶対ルール
+TAB操作（フォーカス）の担保: :hover だけでなく、必ず &:focus-visible を併記し、キーボードのTABキーで選択された際にもホバー時と同等（または視認性の高い）スタイルが実行されるようにすること。
+
+PCのみに限定（ホバー粘着防止）: スマホなどのタッチデバイスでタップした後にホバー状態が残るのを防ぐため、&:hover は必ず @media (any-hover: hover) { ... } の中でネストすること。
+
+⭕ 良い例（AIが従うべきインタラクションの基本形）
+SCSS
+.p-card-link {
+transition: opacity 0.3s ease;
+
+// 1. キーボード操作（TABキー）用
+&:focus-visible {
+outline: 2px solid $text-accent; // 案件共通のフォーカス線を出す
+opacity: 0.7;
+}
+
+// 2. PCの静的なマウスホバー用（スマホでは実行されない）
+@media (any-hover: hover) {
+&:hover {
+opacity: 0.7;
+}
+}
+}
+❌ 悪い例（AIがやりがちな禁止パターン）
+SCSS
+.p-card-link {
+// 【禁止】スマホでタップした時に色が変わりっぱなしになる
+&:hover {
+opacity: 0.7;
+}
+// 【禁止】キーボード操作のことが考慮されていない
+}
+
+## カラー変数の運用ルール
+
+- **単一の正:** カラーは `variables.scss` で一元管理し、SCSSファイル内での16進数（#xxx）直書きは【厳禁】とする。
+- **拡張性:** `variables.scss` には「基本カラー」と「拡張カラー」のセクションを設ける。
+- **AIによる拡張:** デザインカンプから新しい色を抽出する必要がある場合、AIは勝手に適当な色を使わず、必ず `variables.scss` に新しい変数名（例: `$color-other6` または意味のある名称）を定義してから使用すること。
+- **命名の指針:** `other1` のような汎用名よりも、役割が明確なら `accent-red` のように役割に合わせた命名を推奨する。
+
+# 状態（State）に関するスタイリング規約
+
+- アコーディオンやモーダルの「開閉」、ハンバーガーメニューの「アクティブ状態」などは、JavaScriptで付与する予定の共通クラス（例: .is-open, .is-active）を想定し、そのクラスがついた際のスタイル（CSS）を静的実装フェーズの時点で先行して記述しておくこと。
+- モーダル等の初期状態は `display: none;` や `opacity: 0;` などで画面から隠し、上記の状態クラスが付与されたら表示されるように設計すること。アコーディオン（`details` + height アニメ）の詳細は `web-coding-accordion.mdc` を参照。
+
+## カード（`.c-card` / `.c-card-*`）のレイアウト規約
+
+カードは **アクセシビリティのためDOMの順序（HTML）とCSSの視覚順を分離する**設計を必ず守ること。
+
+### `order` による視覚順の制御
+
+HTMLはテキスト先・画像後で記述し、CSSの `order` または `grid-template-areas` で視覚上「画像→テキスト」に並べ直す。
+
+⭕ 良い例
+
+```scss
+// Flexboxパターン
+.c-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-card__figure {
+  order: -1; // 視覚的に先頭（画像を上に）
+}
+
+// Gridパターン
+.c-card {
+  display: grid;
+  grid-template-areas:
+    "figure"
+    "body";
+}
+
+.c-card__figure {
+  grid-area: figure;
+}
+
+.c-card__body {
+  grid-area: body;
+}
+```
+
+❌ 悪い例
+
+```scss
+// 【禁止】視覚順を合わせるためにHTMLのDOM順序を変える（SCSSで解決すること）
+// → DOMは必ずテキスト先・画像後に固定し、order / grid-template-areas で対応する
+```
+
+- **`order` はあくまで視覚的な並び替えのみ。フォーカス順やスクリーンリーダーの読み上げ順はDOMに従う。**
+- HTML側の詳細は `web-coding-html.mdc` の「カードのマークアップ規約」を参照。
+
+## `rclamp()` の使いどころルール
+
+`rclamp()` はフォントサイズだけでなく、**block 軸の `gap` や余白がブレイクポイント付近で急変する場合**にも使用する。**inline 軸（左右間隔）の `column-gap` の詳細は `web-coding-spacing.mdc` を参照。**
+
+### 基本方針
+
+- `$min`: SPの値（またはブレイクポイント直後に望ましい最小値）
+- `$max`: PCの最大値
+- viewport範囲（フォント・block 軸 gap）: `$bp-md` 〜 `$pc-inner` を基本とする
+
+```scss
+// フォントサイズ
+.p-card__heading {
+  font-size: rclamp(18, 28, $bp-md, $pc-inner);
+}
+
+// block 軸 gap（滑らかな変化が必要なとき）
+.p-card__item {
+  gap: rclamp(20, 50, $bp-md, $pc-inner);
+}
+```
+
+- `rclamp()` を使う場合は `@include font()` による2段階切り替えや固定 `rm()` の PC ブレイクポイント上書きは不要になる
+- SP側は `rclamp()` の `$min` でクランプされるため、SP用の個別指定は基本的に省略できる
+
+## `figure` ラッパーへの `border-radius` 適用ルール
+
+`img` に `border-radius` を直接かけると、一部のブラウザや `object-fit` 使用時に角丸が効かないことがある。ラッパー要素に `overflow: hidden` と組み合わせて設定することを必須とする。
+
+⭕ 良い例
+
+```scss
+.c-card__figure {
+  border-radius: rm(15);
+  overflow: hidden; // border-radius を img に確実に適用する
+}
+
+// img 自身への border-radius 記述は不要
+```
+
+❌ 悪い例
+
+```scss
+.c-card__figure img {
+  border-radius: rm(15); // 【非推奨】object-fit 使用時に効かない場合がある
+}
+```
+
+- `aspect-ratio` もラッパー側に指定すること（`base.scss` で `img { height: 100%; }` が定義されているため、`img` に直接 `height: auto` を上書きするより確実）
+- **`height` の固定値は禁止。** `height: rm(220)` のような固定高さを figure に指定すると、コンテンツ比率やレスポンシブ幅の変化に追従できなくなる。必ず `aspect-ratio` で算出させること。
+
+```scss
+// ✅ 良い例（aspect-ratio でラッパーの高さを算出）
+.c-card__figure {
+  border-radius: rm(15);
+  overflow: hidden;
+  aspect-ratio: 310 / 250; // 画像の自然比率をそのまま指定
+  // width 指定と組み合わせて height が自動計算される
+}
+
+// ❌ 悪い例（height 固定）
+.c-card__figure {
+  height: rm(220); // 【禁止】固定高さ → aspect-ratio に変更すること
+}
+```
+
+## Swiper 静的フォールバック（必須）
+
+Swiper 前提の各スライダー SCSS には、**必ず** `:not(.swiper-initialized)` フォールバックを記述すること。詳細・マークアップ規約は `web-coding-swiper.mdc` を参照。
+
+```scss
+.p-xxx__slider:not(.swiper-initialized) .swiper-wrapper {
+  display: flex;
+}
+
+.p-xxx__slider:not(.swiper-initialized) .swiper-slide {
+  flex-shrink: 0;
+  width: 100%;
+  height: auto;
+}
+```
+
+- 常時横スライド（ギャラリー等）も同パターンを適用し、wrapper に常時 `display: flex` だけ書く方式は避ける
+- PC で非スライダー化する場合は、フォールバックに加え `mq(md)` 以降で `.swiper-wrapper` の `flex-direction: column` 等を定義する
+
+## overflow スクロール領域（キーボード操作）
+
+`overflow-y: auto` 等で要素内スクロールさせる領域の規約（`tabindex` / `overscroll-behavior` / 代理スクロール JS）は `web-coding-overflow-scroll.mdc` を参照。
+
+## overflow: hidden と box-shadow の切れ防止
+
+親に `overflow: hidden` があり、子（カード等）に `box-shadow` / `filter` / `outline` がある場合、はみ出し分がクリップされる。Swiper コンテナ（`.swiper`）も `overflow: hidden` + `padding: 0` のため同様。
+
+### 基本方針（本案件）
+
+1. `overflow: hidden` は維持（スライダー・クリップ用途のため削除しない）
+2. **切れる辺だけ** 親コンテナに shadow bleed 用 `padding` を付与（一律 padding 禁止）
+3. **inline 方向** は `width: calc(100% + bleed)` でカード幅を相殺（`box-sizing: border-box` 必須）
+4. **block 方向** は padding のみ（負 margin で縦余白を相殺しない）
+5. **gap / Swiper `spaceBetween` は変更しない**
+
+### bleed 値（ファイル先頭のローカル変数）
+
+```scss
+// box-shadow: rm(3) rm(3) rm(4) の場合
+$card-shadow-offset: 3;
+$card-shadow-blur: 4;
+$shadow-bleed: 8; // offset + blur + 1px 余裕
+```
+
+### 実装テンプレ
+
+```scss
+// inline-end のみ切れる場合（プラン一覧 SP/PC）
+.p-example__slider.swiper {
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-inline-end: rm($shadow-bleed);
+  padding-block-end: rm($shadow-bleed); // 下が切れる場合のみ
+  width: calc(100% + #{rm($shadow-bleed)});
+}
+
+@include mq(md) {
+  .p-example__slider.swiper {
+    padding-block-start: rm($shadow-bleed); // 上が切れる場合のみ
+  }
+}
+
+// inline 両側（お客様の声 PC lg+）
+@include mq(lg) {
+  .p-voice__slider {
+    padding-inline: rm($shadow-bleed);
+    padding-block-start: rm($shadow-bleed);
+    padding-block-end: rm($shadow-bleed);
+    width: calc(100% + #{rm($shadow-bleed)} * 2);
+  }
+}
+```
+
+### Swiper CDN との詳細度競合
+
+- HTML で `p-*` と `.swiper` が**同一要素**に付く（例: `.p-service-mongol__plans.swiper`）
+- `index.html` では `style.css` → `swiper-bundle.min.css` の順で、**同詳細度は Swiper が後勝ち**
+- コンテナの padding / width は **`.p-xxx.swiper` 複合セレクタ**（`0,2,0`）で書く
+- pagination をフロー配置する場合は `.p-xxx.swiper .swiper-pagination` に `position: static` 等で Swiper の `absolute` を上書き
+
+### 禁止パターン
+
+```scss
+// ❌ 詳細度不足（Swiper の padding: 0 に負ける）
+.p-example__slider { padding-inline-end: rm(8); }
+
+// ❌ slide 単位に一律 padding（gap / spaceBetween と二重になる）
+.swiper-slide { padding: rm(8); }
+
+// ❌ 負 margin で縦余白を相殺（本案件方針では使わない）
+margin-block: rm(-8);
+```
+
+参照実装: `p-service-mongol.scss`（プラン一覧）、`p-voice.scss`（お客様の声）
